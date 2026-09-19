@@ -1,0 +1,92 @@
+# ==========================================
+# Nirman AI - Git Ignore Configuration
+# ==========================================
+
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Node.js & Frontend Dependencies
+node_modules/
+frontend/node_modules/
+.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python Cache & Bytecode
+__pycache__/
+*/__pycache__/
+*/*/__pycache__/
+*/*/*/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+.eggs/
+
+# Environment Variables & Secrets (CRITICAL)
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Logs & Runtime Artifacts
+*.log
+ingestion_error.log
+ingestion_output.txt
+logs/
+
+# Heavy Raw Data Dumps (>100MB / Multi-GB PDF files)
+raw/
+
+
+# Operating System & IDE Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Temporary database files
+database/*.db-journal
+database/*.db-wal
+database/*.db-shm
+
+# Additional local Python environment
+.venv_xgb/
+
+# Temporary audit/debug files
+scratch/
+
+# Frontend production build output
+frontend/dist/
+
+# Local SQLite database
+database/*.db
+
+# Python tooling/cache
+.mypy_cache/
+.ruff_cache/
+
+# Generated model/cache artifacts
+*.pkl.tmp
+*.joblib.tmp
+
+# Large generated data and RAG artifacts
+processed/documents/
+processed/extracted/schema_inventory.json
