@@ -12,3 +12,4 @@ shap>=0.45.0
 google-genai>=0.1.0
 bcrypt
 PyJWT
+tifffile
