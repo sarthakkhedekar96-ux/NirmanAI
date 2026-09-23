@@ -1,233 +1,700 @@
-<div align="center">
+🏗️ Nirman AI (निर्माण AI)
 
-# 🏗️ Nirman AI (निर्माण AI)
-### Autonomous Infrastructure Risk Intelligence & Predictive Surveillance Platform
+Autonomous Infrastructure Risk Intelligence & Predictive Surveillance Platform
 
-[![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![React](https://img.shields.io/badge/Frontend-React_18_%7C_TypeScript-61DAFB?style=flat-square&logo=react&logoColor=black)](https://reactjs.org/)
-[![Vite](https://img.shields.io/badge/Bundler-Vite_6-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![TailwindCSS](https://img.shields.io/badge/Styling-Tailwind_CSS-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![XGBoost](https://img.shields.io/badge/ML_Engine-XGBoost_%2B_SHAP-FF6600?style=flat-square)](https://xgboost.ai/)
-[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
-[![Database](https://img.shields.io/badge/Database-PostgreSQL_%2F_SQLite-336791?style=flat-square&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+Nirman AI transforms infrastructure monitoring from reactive reporting into proactive, explainable decision intelligence.
 
-<p align="center">
-  <b>Transforming national infrastructure monitoring from static monthly PDF reports into an active, evidence-grounded predictive intelligence platform.</b>
-</p>
+It combines longitudinal project telemetry, predictive machine learning, SHAP explainability, evidence-grounded RAG, environmental intelligence, dependency analysis, satellite change detection, what-if simulation, and an AI Copilot in one infrastructure command center.
 
-</div>
+🎯 What Nirman AI Does
 
----
+Nirman AI helps infrastructure decision-makers answer:
 
-## 📌 Problem Statement & Context
+Which projects currently require attention?
 
-India’s **Ministry of Statistics and Programme Implementation (MoSPI)** monitors thousands of central sector infrastructure projects (valued at ₹150+ Crore each) across Railways, Road Transport & Highways, Petroleum, Power, Urban Development, and Mining.
+What factors are driving a project's risk?
 
-Traditionally, project surveillance depended on 500+ page monthly PDF Flash Reports. This led to:
-* **Reactive Bottlenecks**: Cost overruns and schedule slippages were identified months after delays originated.
-* **Massive Financial Scale**: Over **₹44.17 Lakh Crore** in capital investments across **5,400+ projects** lacked unified, real-time queryable telemetry.
-* **Lack of Root-Cause Explainability**: Decisions lacked empirical machine learning models capable of isolating primary risk drivers.
+Which projects show early-warning signals?
 
-**Nirman AI** unifies multi-source longitudinal project telemetry, machine learning risk forecasting, hybrid document retrieval, dynamic query planning, and interactive geospatial mapping into an enterprise-grade command center.
+How are weather and environmental conditions affecting project exposure?
 
----
+Which departments, agencies, clearances, or funding relationships create coordination pressure?
 
-## 🌟 Key Platform Capabilities
+What could happen under additional cost or schedule stress?
 
-### 1. 🤖 Nirman AI Copilot v2 (Autonomous Intelligence Layer)
-* **Dynamic Query Planner**: Translates arbitrary natural language inquiries into validated execution plans across 12 discrete backend capabilities.
-* **Multi-Tool Orchestrator**: Executes queries deterministically via Python services without exposing raw unconstrained SQL execution.
-* **Evidence Claim Validator**: Audits generated statements and numbers against database ground-truth claims to eliminate arithmetic hallucinations.
-* **Standardized 6-Part Output**: Formats responses with Direct Answer, Key Findings, Important Numbers, Root Drivers, Verifiable Citations (`[E1]`, `[E2]`), and Interactive Action Chips.
+What official evidence supports an AI-generated answer?
 
-### 2. ⚡ XGBoost Machine Learning Risk Engine v1
-* **Predictive Risk Classification**: Predicts cost expansion and timeline slippage probability before critical milestones fail, stratifying projects into **Critical, High, Moderate, and Low** risk tiers ($T^* \ge 0.28$).
-* **SHAP Explainability**: Decomposes individual project predictions into exact percentage driver contributions (e.g., *Land Acquisition: 34%, Contractor Cashflow: 28%, Forestry Clearance: 19%*).
+What actions should be reviewed for a high-risk project?
 
-### 3. 🔍 Hybrid RAG Knowledge Engine
-* **331,000+ Chunk Vector Store**: Indexes text from Flash Reports, project minutes, and official records.
-* **Reciprocal Rank Fusion (RRF)**: Blends sparse keyword matching (BM25) with dense semantic embeddings to deliver grounded, citation-backed textual evidence.
+Predict → Explain → Monitor → Simulate → Warn → Recommend
 
-### 4. 🗺️ Official Survey-Accurate India Geospatial Map
-* **Accurate Geographic Boundaries**: High-resolution vector paths matching official Survey of India boundaries across all 28 States and 8 Union Territories (including complete borders for Ladakh, Jammu & Kashmir, Arunachal Pradesh, Northeast States, and Island territories).
-* **Dynamic Choropleth Modes**: Heatmap toggles for **Risk Exposure**, **Cost Overrun (₹ Cr)**, **Average Delay (Months)**, and **Total Projects**.
-* **Interactive Telemetry**: Real-time state hover cards and click-to-filter drilldowns.
+📌 Problem Context
 
-### 5. 📊 Live Infrastructure Portfolio Explorer
-* **Complete Database Coverage**: Real-time search and filter across all **5,469 projects** (no artificial 100-item caps).
-* **Multi-Parameter Filtering**: Filter by Sector, State, Risk Category, Cost Range, and Delay Duration with server-side pagination.
+India's Ministry of Statistics and Programme Implementation (MoSPI) monitors major Central Sector Infrastructure Projects across sectors such as Railways, Road Transport & Highways, Petroleum, Power, Urban Development, Mining, and others.
 
----
+Traditional monitoring relies heavily on periodic reports and large collections of official documents. This creates challenges:
 
-## 🏛️ System Architecture
+Reactive monitoring: emerging cost and schedule problems can become visible only after deterioration.
 
-```mermaid
-flowchart TD
-    subgraph Data Layer
-        A["MoSPI Monthly Flash Reports (PDF / CSV)"] --> B["Data Ingestion & Normalization Pipeline"]
-        B --> C["PostgreSQL / SQLite Database<br/>(5,469 Projects & Longitudinal Time-Series)"]
-        B --> D["RAG Vector Store<br/>(331,206 Document Chunks)"]
-    end
+Large-scale data: thousands of projects and longitudinal observations need unified analysis.
 
-    subgraph Intelligence & Model Layer
-        C --> E["XGBoost Risk Engine v1<br/>(Calibrated Threshold T* >= 0.28)"]
-        E --> F["TreeSHAP Explainability<br/>(Root-Cause Factor Attribution)"]
-        D --> G["Hybrid Retrieval (BM25 + Dense + RRF)"]
-    end
+Limited explainability: a risk score alone does not explain its operational drivers.
 
-    subgraph Agentic Orchestration Layer
-        H["User Natural Language Inquiry"] --> I["LLM Query Planner"]
-        I --> J["Capability Registry (12 Core Tools)"]
-        J --> K["Multi-Tool Analysis Orchestrator"]
-        K --> C
-        K --> E
-        K --> G
-        K --> L["Evidence Claim Validator<br/>(Zero Arithmetic Hallucinations)"]
-        L --> M["6-Part Adaptive Response Composer"]
-    end
+Fragmented intelligence: project, financial, schedule, environmental, dependency, and document information can be separated.
 
-    subgraph Frontend User Interface
-        M --> N["React 18 + TypeScript + Tailwind UI"]
-        C --> N
-        N --> O["Executive KPI Dashboard"]
-        N --> P["Portfolio Explorer (5,469 Projects)"]
-        N --> Q["Accurate India GIS Map"]
-        N --> R["Risk Intelligence & Early Warnings"]
-        N --> S["AI Copilot Conversational Workspace"]
-    end
-```
+Evidence retrieval: decision-makers need supporting records rather than unsupported AI answers.
 
----
+Nirman AI addresses these challenges through predictive risk intelligence, explainability, evidence retrieval, environmental monitoring, dependency intelligence, satellite analysis, and scenario simulation.
 
-## 🛠️ Tech Stack
+🌟 Key Platform Capabilities
 
-| Layer | Technologies |
-| :--- | :--- |
-| **Frontend** | React 18, TypeScript, Vite, Tailwind CSS, Lucide Icons |
-| **Backend** | FastAPI, Uvicorn, Pydantic v2, Python 3.10+ |
-| **Database** | PostgreSQL, SQLite, SQLAlchemy, Parquet |
-| **Machine Learning** | XGBoost, Scikit-Learn, LightGBM, SHAP, Joblib, NLTK |
-| **Search & Retrieval** | BM25, TF-IDF Dense SVD Vector Embeddings, Reciprocal Rank Fusion (RRF) |
-| **LLM & AI** | Google Gemini API (`gemini-2.5-flash`), Custom Dynamic Query Planner |
+1. 🤖 Nirman AI Copilot
 
----
+Evidence-grounded AI decision support with:
 
-## 🚀 Quickstart & Setup Guide
+Natural-language infrastructure queries
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/sanket-gayakhe/NirmanAI.git
-cd NirmanAI
-```
+Dynamic query planning
 
-### 2. Environment Configuration
-Copy the template configuration and set your Gemini API key:
-```bash
-cp .env.example .env
-```
-Edit `.env`:
-```env
-DB_USER=postgres
-DB_PASSWORD=your_password
-DB_NAME=nirman_db
-DB_HOST=localhost
-DB_PORT=5432
+Multi-service orchestration
 
-GEMINI_API_KEY=your_gemini_api_key_here
-GEMINI_MODEL=gemini-2.5-flash
-```
+Database-grounded numerical answers
 
-### 3. Backend Setup
-```bash
-# Create and activate virtual environment
-python3 -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+Evidence and citation retrieval
 
-# Install dependencies
+Project-specific context
+
+Action-oriented recommendations
+
+Guardrails against unsupported claims
+
+2. ⚡ Predictive Risk Intelligence
+
+Nirman AI uses an XGBoost-based risk engine with calibrated severe-risk probability and operational early-warning logic.
+
+Risk score
+
+Category
+
+0–<30
+
+LOW
+
+30–<60
+
+MODERATE
+
+60–<80
+
+HIGH
+
+80–100
+
+CRITICAL
+
+Important threshold distinction
+
+T=0.28 applies to severe-risk probability / early-warning escalation. It is not the threshold used for the four risk categories above.*
+
+The platform therefore separates:
+
+Composite risk category
+
+Severe-risk probability
+
+Early-warning state
+
+3. 🔬 SHAP Explainability
+
+TreeSHAP identifies the factors contributing to an individual project risk assessment, such as:
+
+Project delay
+
+Original delay
+
+Months remaining
+
+Cost indicators
+
+Progress indicators
+
+Milestone indicators
+
+The goal is not only “what is the risk?”, but also “why?”
+
+4. 🔍 Hybrid RAG Knowledge Engine
+
+The document intelligence layer combines:
+
+Structured project-code matching
+
+Metadata retrieval
+
+Content fallback retrieval
+
+BM25 / sparse retrieval
+
+TF-IDF-SVD dense representations
+
+Reciprocal Rank Fusion (RRF)
+
+Citation-aware evidence presentation
+
+The production ingestion corpus contains approximately 331,000 document chunks.
+
+The system reports honest zero-result states when supporting evidence cannot be established rather than fabricating citations.
+
+5. 🗺️ Infrastructure Geospatial Intelligence
+
+Interactive India infrastructure mapping supports views including:
+
+Risk exposure
+
+Project distribution
+
+Cost-related indicators
+
+Schedule-related indicators
+
+Environmental severity
+
+Geographic project filtering
+
+Environmental severity is kept separate from ML risk exposure.
+
+6. 🌦️ Weather & Disaster Intelligence
+
+Live environmental intelligence uses Open-Meteo when available.
+
+Signals include:
+
+Rainfall
+
+Wind
+
+Temperature
+
+Thermal stress
+
+Cold-weather conditions
+
+Potential disruption windows
+
+Severity states:
+
+NORMAL → WATCH → ELEVATED → HIGH → SEVERE
+
+If live weather data cannot be obtained, the platform reports UNAVAILABLE rather than inventing values.
+
+7. 🦺 Physical-Condition Advice Engine
+
+Environmental conditions are translated into operational review guidance, including:
+
+Heavy-rain precautions
+
+High-wind safety considerations
+
+Heat-stress precautions
+
+Cold-weather worker protection
+
+Concrete curing considerations
+
+Material protection
+
+Equipment and hydraulic-line protection
+
+Slip/icing hazards
+
+8. 🔗 Cross-Department Dependency Intelligence
+
+The dependency graph models relationships between:
+
+Projects
+
+Agencies
+
+Departments
+
+Contractors
+
+Funding entities
+
+Clearance authorities
+
+Sectors
+
+States
+
+Evidence states:
+
+OBSERVED · DOCUMENTED · INFERRED
+
+The dependency layer does not modify the production ML risk score.
+
+9. 🚦 Bottleneck Leaderboard
+
+A dedicated leaderboard identifies entities with high dependency concentration across:
+
+Departments
+
+Agencies
+
+Clearance Authorities
+
+Funding Entities
+
+Sectors
+
+States
+
+The Coordination Pressure Index is a deterministic coordination indicator, not a probability of project failure and not evidence that an entity caused a delay.
+
+10. 🛰️ Satellite Change Detection
+
+The satellite pipeline uses Sentinel-2 L2A imagery and public STAC sources for bi-temporal spectral analysis.
+
+Processing includes:
+
+AOI-based raster processing
+
+Geospatial grid alignment
+
+UTM target grid
+
+Cloud/shadow quality handling where source metadata permits
+
+NDVI
+
+NDBI
+
+NDWI
+
+Spectral change detection
+
+If public satellite assets cannot be downloaded or decoded, the result is explicitly reported as UNAVAILABLE.
+
+Spectral change does not independently prove construction progress, project delay, or project failure.
+
+11. 🧪 Synthetic Stress-Test / What-If Intelligence
+
+Hypothetical scenarios operate on in-memory copies and do not modify production records.
+
+Presets:
+
+BASELINE
+
+COST PRESSURE
+
+SCHEDULE SLIP
+
+EXTREME WEATHER
+
+COMBINED STRESS
+
+CUSTOM
+
+Controls include cost overrun, additional delay, rainfall multiplier, temperature delta, and dependency/clearance stress where applicable.
+
+Scenario outputs are explicitly labelled as synthetic/hypothetical and are not actual project observations.
+
+12. 📋 Prescriptive Decision Recommendations
+
+Project-specific deterministic conditions can generate review recommendations such as:
+
+Cost baseline re-audit
+
+Milestone velocity tracking
+
+Schedule review
+
+Risk-driver review
+
+Project-specific monitoring actions
+
+Recommendations can include trigger conditions and rationale.
+
+🏗️ System Architecture
+
+React + TypeScript + Vite
+          │
+          ▼
+      FastAPI API
+          │
+   ┌──────┼────────┬────────────┐
+   ▼      ▼        ▼            ▼
+PostgreSQL ML/Risk  RAG       External Data
+           │        │       Weather/Satellite
+           └────┬───┘
+                ▼
+      Intelligence Services
+  Environment / Dependencies /
+  Satellite / Stress Testing
+                │
+                ▼
+          Gemini Copilot
+
+🛠️ Technology Stack
+
+Layer
+
+Technologies
+
+Frontend
+
+React 18, TypeScript, Vite, Tailwind CSS, Lucide Icons
+
+Backend
+
+FastAPI, Uvicorn, Pydantic v2, Python 3.10+
+
+Database
+
+PostgreSQL, SQLite fallback, SQLAlchemy
+
+ML
+
+XGBoost, Scikit-learn, SHAP, Joblib, LightGBM
+
+Retrieval
+
+BM25, TF-IDF-SVD, Reciprocal Rank Fusion
+
+LLM
+
+Google Gemini
+
+Weather
+
+Open-Meteo
+
+Satellite
+
+Sentinel-2 L2A / public STAC sources
+
+Authentication
+
+JWT HS256, HttpOnly cookies, bearer authentication
+
+Security
+
+RBAC, password hashing, rate limiting, CORS
+
+Deployment
+
+Vercel + Render + managed PostgreSQL
+
+📊 Production Data Scale
+
+The primary production API cohort currently contains:
+
+Dataset
+
+Records
+
+Projects
+
+3,589
+
+Project observations
+
+13,098
+
+Project features
+
+13,098
+
+Risk scores
+
+13,098
+
+Dependency nodes
+
+4,496
+
+Dependency edges
+
+19,564
+
+RAG document chunks
+
+331,206
+
+Note: Other source/processed datasets contain a larger historical project population. The 3,589 figure above refers specifically to the primary production API cohort.
+
+🔐 Authentication & Security
+
+JWT authentication
+
+HttpOnly cookie support
+
+Bearer-token authentication
+
+Role-based access control
+
+Password hashing and complexity validation
+
+Rate limiting
+
+CORS configuration
+
+Sanitized logging
+
+Error handling middleware
+
+Protected intelligence endpoints
+
+Health and readiness monitoring
+
+Production deployments should provide a strong JWT_SECRET_KEY and explicit CORS_ORIGINS.
+
+🚀 Local Development
+
+Backend
+
+Create a virtual environment:
+
+python -m venv .venv
+
+Windows:
+
+.venv\Scripts\Activate.ps1
+
+Linux/macOS:
+
+source .venv/bin/activate
+
+Install dependencies:
+
 pip install -r backend/requirements.txt
-```
 
-### 4. Frontend Setup
-```bash
+Start FastAPI:
+
+python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload
+
+Swagger: http://127.0.0.1:8000/docs
+
+Health: http://127.0.0.1:8000/api/health
+
+Frontend
+
 cd frontend
 npm install
+npm run dev
+
+The Vite development server normally runs at http://localhost:5173.
+
+Configure the API base with:
+
+VITE_API_BASE_URL=/api
+
+🌐 Production Deployment
+
+Target architecture:
+
+Vercel React Frontend
+        │ HTTPS
+        ▼
+Render FastAPI Backend
+        │
+   ┌────┴────┐
+   ▼         ▼
+Managed DB  External APIs
+PostgreSQL  Gemini / Weather / Satellite
+
+Backend start command:
+
+python -m uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT
+
+Required production variables include:
+
+DATABASE_URL=...
+JWT_SECRET_KEY=...
+CORS_ORIGINS=...
+
+Frontend production configuration:
+
+VITE_API_BASE_URL=https://<backend-domain>/api
+
+RAG functionality requires the production document_chunks table to be populated.
+
+🧪 Testing & Verification
+
+The repository contains tests for:
+
+API contracts
+
+Authentication and authorization
+
+Database integrity
+
+Risk engine
+
+SHAP explainability
+
+RAG retrieval
+
+AI assistant
+
+Recommendations
+
+Environmental intelligence
+
+Dependency intelligence
+
+Satellite processing
+
+Stress testing
+
+Resilience
+
+Performance
+
+Frontend integration
+
+Golden-project consistency
+
+Security
+
+Examples:
+
+python scripts/testing/test_risk_engine.py
+python scripts/testing/test_rag.py
+python scripts/testing/test_environment.py
+python scripts/testing/test_dependencies.py
+python scripts/testing/test_satellite.py
+python scripts/testing/test_stress_test.py
+
+Full regression harness:
+
+python scripts/testing/run_full_test_suite.py
+
+Frontend validation:
+
+cd frontend
+npx tsc --noEmit
 npm run build
-cd ..
-```
 
-### 5. Launch the Platform
-Start the unified application (FastAPI backend + Vite frontend):
-```bash
-python3 start_server.py
-```
-* **Web UI**: Open [http://localhost:5173](http://localhost:5173) in your browser.
-* **API Documentation**: Open [http://localhost:8000/docs](http://localhost:8000/docs) (Swagger UI).
+📂 Project Structure
 
----
-
-## 🧪 Testing & Verification
-
-Nirman AI includes a comprehensive acceptance test harness:
-
-```bash
-# Run Master Acceptance Test Harness
-python3 scripts/testing/run_full_acceptance.py
-
-# Run AI Copilot v2 Intelligence Evaluation (Categories A-K)
-python3 scripts/testing/test_copilot_v2_eval.py
-```
-
-### Acceptance Matrix Summary:
-* ✅ **AI Copilot Intelligence (Categories A–K)**: 11 / 11 Passed
-* ✅ **Database & Ingestion Integrity**: 17 / 17 Passed
-* ✅ **XGBoost Risk Engine & SHAP**: 5 / 5 Passed
-* ✅ **RAG Hybrid Search & RRF**: 6 / 6 Passed
-* ✅ **REST API Contracts**: 22 / 22 Passed
-* ✅ **Frontend React Build**: 0 Errors (`tsc && vite build`)
-
----
-
-## 📂 Project Directory Structure
-
-```
 NirmanAI/
 ├── backend/
 │   ├── app/
-│   │   ├── core/              # DB resilience & logging configuration
-│   │   ├── routes/            # REST API endpoints (analytics, projects, assistant, risk)
-│   │   ├── schemas/           # Pydantic validation schemas
-│   │   └── services/          # Business logic (query planner, risk engine, RAG, orchestrator)
-│   ├── models/                # Embedding & vector models
-│   └── requirements.txt       # Python dependencies
+│   │   ├── core/
+│   │   ├── middleware/
+│   │   ├── models/
+│   │   ├── routes/
+│   │   ├── schemas/
+│   │   └── services/
+│   ├── models/
+│   │   └── embeddings/
+│   └── requirements.txt
 ├── database/
-│   ├── schema.sql             # Relational database schema
-│   └── nirman.db              # Seed SQLite database
-├── documentation/             # Architectural & phase-wise documentation
+│   └── schema.sql
+├── documentation/
 ├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── analytics/     # India Map SVG & GIS path definitions
-│   │   │   ├── assistant/     # AI Copilot drawer & chat cards
-│   │   │   ├── dashboard/     # Executive overview & KPIs
-│   │   │   └── portfolio/     # Full-database project explorer & comparison
-│   │   ├── services/          # Axios API clients
-│   │   └── types/             # TypeScript interfaces
-│   └── package.json           # Frontend dependencies
-├── models/                    # Trained ML artifacts (XGBoost, Random Forest, LightGBM)
-├── processed/                 # Engineered feature datasets & inventory manifests
-├── scripts/                   # Data extraction, training, and testing suites
-├── start_server.py            # Unified server launcher
-├── .env.example               # Environment variables template
-└── .gitignore                 # Git ignore rules
-```
+│   ├── public/
+│   └── src/
+├── metadata/
+├── models/
+├── processed/
+├── scripts/
+│   ├── database/
+│   ├── extraction/
+│   ├── features/
+│   ├── ingestion/
+│   ├── models/
+│   ├── normalization/
+│   ├── testing/
+│   └── validation/
+├── .env.example
+├── .gitignore
+└── README.md
 
----
+🏆 Key Differentiators
 
-## 📄 License
-This project was developed for the **Smart India Hackathon (SIH)** under MoSPI infrastructure monitoring guidelines.
+Predictive: moves beyond static project reporting.
 
----
+Explainable: exposes interpretable risk drivers.
 
-<div align="center">
-  <b>Empowering transparent, predictive, and data-driven infrastructure governance.</b>
-</div>
+Multi-intelligence: combines project, ML, documents, weather, satellite, dependencies, and simulation.
+
+Evidence-grounded: connects AI responses to retrieved evidence.
+
+Scenario-aware: supports hypothetical stress testing without changing production data.
+
+Honest uncertainty: external-data failures are represented as UNAVAILABLE instead of fabricated measurements.
+
+⚠️ Important Model & Data Notes
+
+Risk categories use the documented composite risk-score bands.
+
+T*=0.28 is an early-warning/severe-risk probability threshold, not a category boundary.
+
+Stress-test outputs are hypothetical.
+
+Satellite spectral change does not independently prove construction progress or delay.
+
+Environmental data depends on external provider availability.
+
+INFERRED dependency evidence is deterministic rule-derived information, not a confirmed project-specific record.
+
+Coordination Pressure Index is a coordination indicator, not a failure probability.
+
+AI recommendations and Copilot responses are decision-support outputs and should be reviewed against authoritative records and professional judgment.
+
+📄 Project Context
+
+Nirman AI was developed in the context of the Smart India Hackathon (SIH) and the infrastructure-monitoring domain associated with MoSPI.
+
+The platform is a technology prototype for predictive infrastructure monitoring, explainable risk intelligence, evidence retrieval, environmental intelligence, and decision support.
+
+🚧 Project Status
+
+Production deployment preparation completed.
+
+✅ Predictive risk intelligence
+
+✅ SHAP explainability
+
+✅ Hybrid RAG
+
+✅ AI Copilot
+
+✅ Authentication & RBAC
+
+✅ Notifications
+
+✅ Environmental intelligence
+
+✅ Physical-condition advice
+
+✅ Dependency intelligence
+
+✅ Bottleneck leaderboard
+
+✅ Satellite change detection pipeline
+
+✅ Synthetic stress testing
+
+✅ Prescriptive recommendations
+
+✅ Production-oriented frontend
+
+✅ FastAPI backend
+
+✅ PostgreSQL support
+
+✅ GitHub repository prepared and pushed
+
+⏳ Managed production deployment
+
+💡 USP
+
+Nirman AI turns infrastructure monitoring from static reporting into predictive, explainable, evidence-grounded decision intelligence.
+
+Short USP
+
+Predict → Explain → Simulate → Warn → Recommend
+
+🏗️ Nirman AI — Building intelligence for better infrastructure decisions.
