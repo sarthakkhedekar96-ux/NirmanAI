@@ -1,13 +1,14 @@
 from typing import Optional
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
 
 from backend.app.services.risk_decomposition_service import RiskDecompositionService
 from backend.app.services.risk_trajectory_service import RiskTrajectoryService
 from backend.app.services.recommendation_engine import PrescriptiveRecommendationEngine
 from backend.app.services.early_warning_service import EarlyWarningPrioritizationService
 from backend.app.services.executive_briefing_service import ExecutiveBriefingService
+from backend.app.core.auth_dependencies import get_current_user
 
-router = APIRouter(prefix="/api/risk", tags=["Phase 7 — Risk Intelligence Engine"])
+router = APIRouter(prefix="/api/risk", tags=["Phase 7 — Risk Intelligence Engine"], dependencies=[Depends(get_current_user)])
 
 decomposition_service = RiskDecompositionService()
 trajectory_service = RiskTrajectoryService()

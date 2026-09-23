@@ -12,18 +12,33 @@ Sets up structured logging for FastAPI, database operations, RAG retrieval, and 
 import sys
 import logging
 import json
+import re
 import time
 from typing import Any, Dict
+
+
+def sanitize_log_text(msg: str) -> str:
+    """Mask sensitive credentials, tokens, and authorization headers in log output."""
+    if not isinstance(msg, str):
+        return str(msg)
+    # Mask password parameters
+    msg = re.sub(r'("?password"?\s*[:=]\s*)("[^"]+"|\'[^\']+\'|\S+)', r'\1"***MASKED***"', msg, flags=re.IGNORECASE)
+    # Mask JWT Bearer tokens
+    msg = re.sub(r'(Bearer\s+)[A-Za-z0-9\-_\.=]+', r'\1***MASKED_TOKEN***', msg, flags=re.IGNORECASE)
+    # Mask secret keys
+    msg = re.sub(r'("?secret"?\s*[:=]\s*)("[^"]+"|\'[^\']+\'|\S+)', r'\1"***MASKED***"', msg, flags=re.IGNORECASE)
+    return msg
 
 
 class StructuredJSONFormatter(logging.Formatter):
     """JSON log formatter for structured observability."""
     def format(self, record: logging.LogRecord) -> str:
+        clean_msg = sanitize_log_text(record.getMessage())
         log_obj: Dict[str, Any] = {
             "timestamp": self.formatTime(record, self.datefmt or "%Y-%m-%dT%H:%M:%S%z"),
             "level": record.levelname,
             "logger": record.name,
-            "message": record.getMessage()
+            "message": clean_msg
         }
 
         # Include additional extra attributes if provided
@@ -41,6 +56,7 @@ class StructuredJSONFormatter(logging.Formatter):
             log_obj["exception"] = self.formatException(record.exc_info)
 
         return json.dumps(log_obj)
+
 
 
 def setup_logging(log_level: str = "INFO"):

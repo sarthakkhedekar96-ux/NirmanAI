@@ -1,3 +1,8 @@
+/**
+ * @deprecated Deprecated in Phase 1 UI Modernization.
+ * Replaced by left Sidebar component (frontend/src/components/layout/Sidebar.tsx).
+ * Kept for backward compatibility.
+ */
 import React from 'react';
 import { LayoutDashboard, Table, AlertTriangle, FileSearch, Map, GitCompare, ShieldCheck } from 'lucide-react';
 

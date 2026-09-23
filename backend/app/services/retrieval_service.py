@@ -57,6 +57,27 @@ class RetrievalService:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute(sql, params)
                 rows = cur.fetchall()
+
+                # Content fallback pre-filter if project_code was specified but 0 metadata matches found
+                if not rows and project_code:
+                    fallback_clauses = [c for c in where_clauses if "project_code" not in c]
+                    fallback_clauses.append("content LIKE %s")
+                    fallback_params = [p for p in params if p != project_code and p != f"%{project_code}%"]
+                    fallback_params.insert(0, f"%{project_code}%")
+
+                    fallback_where = (" WHERE " + " AND ".join(fallback_clauses)) if fallback_clauses else ""
+                    fallback_sql = f"""
+                        SELECT chunk_id, content, embedding, source_file, relative_path,
+                               page_number, reporting_month, reporting_year, project_code,
+                               document_type, metadata
+                        FROM document_chunks
+                        {fallback_where}
+                        LIMIT 5000;
+                    """
+                    cur.execute(fallback_sql, fallback_params)
+                    rows = cur.fetchall()
+        except Exception:
+            rows = []
         finally:
             conn.close()
 

@@ -9,9 +9,13 @@ try:
 except ImportError:
     HAS_SENTENCE_TRANSFORMERS = False
 
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.decomposition import TruncatedSVD
-import joblib
+try:
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.decomposition import TruncatedSVD
+    import joblib
+    HAS_SKLEARN = True
+except ImportError:
+    HAS_SKLEARN = False
 
 EMBEDDING_DIR = Path(__file__).resolve().parent.parent.parent / "models" / "embeddings"
 EMBEDDING_DIR.mkdir(parents=True, exist_ok=True)
@@ -36,15 +40,18 @@ class EmbeddingService:
                 print(f"[EmbeddingService] Could not load SentenceTransformer ({e}). Falling back to TFIDF-SVD.")
         
         if not self.mode:
-            if FALLBACK_MODEL_PATH.exists():
+            if HAS_SKLEARN and FALLBACK_MODEL_PATH.exists():
                 saved_models = joblib.load(FALLBACK_MODEL_PATH)
                 self.tfidf_vectorizer = saved_models["tfidf"]
                 self.svd_model = saved_models["svd"]
                 self.mode = "tfidf_svd"
                 print(f"[EmbeddingService] Loaded fallback TFIDF-SVD encoder from {FALLBACK_MODEL_PATH}")
-            else:
+            elif HAS_SKLEARN:
                 self.mode = "unfitted_tfidf_svd"
                 print(f"[EmbeddingService] Initialized unfitted TFIDF-SVD encoder. Call fit_fallback() to train on corpus.")
+            else:
+                self.mode = "dummy"
+                print(f"[EmbeddingService] Initialized dummy vector encoder (384 dims).")
 
     def fit_fallback(self, texts: list[str]):
         """Fit TF-IDF + TruncatedSVD on the corpus for fallback dense embeddings."""

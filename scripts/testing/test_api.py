@@ -14,13 +14,21 @@ sys.path.insert(0, BASE_DIR)
 
 API_HOST = "http://127.0.0.1:8000"
 
+from test_auth_helper import get_test_auth_headers
+
 def get(path):
     url = f"{API_HOST}{path}"
+    headers = get_test_auth_headers(api_host=API_HOST)
+    req = urllib.request.Request(url, headers=headers)
     try:
-        req = urllib.request.urlopen(url, timeout=4)
-        return req.status, json.loads(req.read().decode('utf-8'))
+        with urllib.request.urlopen(req, timeout=20) as response:
+            return response.status, json.loads(response.read().decode('utf-8'))
     except urllib.error.HTTPError as e:
-        return e.code, json.loads(e.read().decode('utf-8'))
+        body_text = e.read().decode('utf-8')
+        try:
+            return e.code, json.loads(body_text)
+        except Exception:
+            return e.code, {"detail": body_text}
     except Exception as e:
         return 0, {"error": str(e)}
 
@@ -43,18 +51,19 @@ def run_tests():
     # PRJ-001 to PRJ-007: Project Directory Limits
     prj_limit_cases = [
         ("PRJ-001", "/api/projects", 200, "Default pagination"),
-        ("PRJ-002", "/api/projects?limit=1", 200, "Limit=1"),
-        ("PRJ-003", "/api/projects?limit=5", 200, "Limit=5"),
-        ("PRJ-004", "/api/projects?limit=500", 200, "Limit=500 (Max)"),
-        ("PRJ-006", "/api/projects?limit=-1", 422, "Negative limit validation guard")
+        ("PRJ-002", "/api/projects?page_size=1", 200, "Limit=1"),
+        ("PRJ-003", "/api/projects?page_size=5", 200, "Limit=5"),
+        ("PRJ-004", "/api/projects?page_size=500", 200, "Limit=500 (Max)"),
+        ("PRJ-006", "/api/projects?page_size=-1", 422, "Negative limit validation guard")
     ]
 
     for t_id, path, exp_status, desc in prj_limit_cases:
         st, body = get(path)
         passed = st == exp_status
-        if st == 200 and isinstance(body, list) and "limit=" in path and exp_status == 200:
-            exp_len = int(path.split("limit=")[1].split("&")[0])
-            passed = len(body) <= exp_len
+        items = body.get("projects", body.get("items", body)) if isinstance(body, dict) else body
+        if st == 200 and isinstance(items, list) and "page_size=" in path and exp_status == 200:
+            exp_len = int(path.split("page_size=")[1].split("&")[0])
+            passed = len(items) <= exp_len
 
         results.append({
             "id": t_id,

@@ -62,8 +62,9 @@ def _gather_top_projects(limit: int = 10) -> List[Dict]:
 
 def _gather_risk_decomposition(project_code: str) -> Dict[str, Any]:
     try:
-        from backend.app.services import risk_decomposition_service
-        return risk_decomposition_service.get_risk_decomposition(project_code)
+        from backend.app.services.risk_decomposition_service import RiskDecompositionService
+        svc = RiskDecompositionService()
+        return svc.decompose_project_risk(project_code) or {}
     except Exception as e:
         print(f"[Assistant] risk_decomp error for {project_code}: {e}")
         return {}
@@ -100,7 +101,28 @@ def _gather_early_warnings() -> Dict[str, Any]:
         return {}
 
 
+def _gather_environmental_report(project_code: str) -> Dict[str, Any]:
+    try:
+        from backend.app.services.environmental_service import EnvironmentalService
+        from backend.app.services import project_service
+        proj = project_service.get_project_details(project_code) or {"project_code": project_code}
+        return EnvironmentalService.get_project_environmental_report(proj)
+    except Exception as e:
+        print(f"[Assistant] environmental_report error for {project_code}: {e}")
+        return {}
+
+
+def _gather_dependency_graph(project_code: str) -> Dict[str, Any]:
+    try:
+        from backend.app.services.dependency_service import dependency_service
+        return dependency_service.build_project_dependency_graph(project_code)
+    except Exception as e:
+        print(f"[Assistant] dependency_graph error for {project_code}: {e}")
+        return {}
+
+
 # ── Intent & Entity Extraction ────────────────────────────────────────────────
+
 
 def _extract_entities(query: str, session: Any) -> Dict[str, Any]:
     """Extract project codes, state names, and key entities from user query."""
@@ -160,6 +182,8 @@ def _build_evidence_context(query: str, entities: Dict[str, Any]) -> Dict[str, A
     if p_code:
         evidence["project_details"] = _gather_project_details(p_code)
         evidence["risk_decomposition"] = _gather_risk_decomposition(p_code)
+        evidence["environmental_report"] = _gather_environmental_report(p_code)
+        evidence["dependency_graph"] = _gather_dependency_graph(p_code)
         if entities.get("is_comparison") and len(all_codes) >= 2:
             evidence["compare_projects"] = [_gather_project_details(c) for c in all_codes[:3]]
 
@@ -188,6 +212,8 @@ def _build_prompt(query: str, evidence: Dict[str, Any], history: List[Dict]) -> 
     risk_decomp = evidence.get("risk_decomposition", {})
     state_dig = evidence.get("state_digest", {})
     compare = evidence.get("compare_projects", [])
+    env_rep = evidence.get("environmental_report", {})
+    dep_graph = evidence.get("dependency_graph", {})
 
     # Format conversation history
     history_text = ""
@@ -229,14 +255,40 @@ def _build_prompt(query: str, evidence: Dict[str, Any], history: List[Dict]) -> 
             proj_text += f"\n- Physical Progress: {latest_obs.get('physical_progress', 'N/A')}%"
             proj_text += f"\n- Latest Reporting Month: {latest_obs.get('reporting_month', 'N/A')}"
 
-    # Format SHAP risk decomposition
+    # Format Environmental Intelligence
+    env_text = ""
+    if env_rep:
+        status = env_rep.get("environmental_data_status", "UNAVAILABLE")
+        env_text = f"""Environmental Intelligence:
+- Status: {status}"""
+        if status == "AVAILABLE":
+            weath = env_rep.get("weather", {})
+            env_text += f"\n- Current Weather: {weath.get('temperature_c')}°C, {weath.get('condition')}, Wind {weath.get('wind_speed_kmh')} km/h, Precip {weath.get('precipitation_mm')} mm"
+            env_text += f"\n- Environmental Severity: {env_rep.get('environmental_assessment', {}).get('overall_severity')}"
+            env_text += f"\n- Contextual Priority: {env_rep.get('contextual_priority', {}).get('level')}"
+
+    # Format Dependency Intelligence
+    dep_text = ""
+    if dep_graph and dep_graph.get("nodes"):
+        nodes = dep_graph.get("nodes", [])
+        edges = dep_graph.get("edges", [])
+        summary = dep_graph.get("summary", {})
+        dep_text = f"""Dependency Intelligence & Cross-Department Context:
+- Connected Nodes: {summary.get('node_count', 0)}
+- Dependencies: {summary.get('edge_count', 0)} (Documented: {summary.get('documented_dependencies', 0)}, Inferred: {summary.get('inferred_dependencies', 0)})
+- Coordination Bottleneck Indicator: {'YES' if summary.get('coordination_bottleneck_indicator') else 'NO'}
+- Key Connected Entities: {', '.join([f"{n.get('name')} ({n.get('type')})" for n in nodes[:5]])}
+- Dependency Links: {', '.join([f"{e.get('source_key')} -> {e.get('relationship_type')} ({e.get('evidence_status')}) -> {e.get('target_key')}" for e in edges[:5]])}"""
+
+    # Format SHAP drivers
     shap_text = ""
     if risk_decomp:
-        drivers = risk_decomp.get("top_drivers", risk_decomp.get("primary_risk_drivers", []))
+        drivers = risk_decomp.get("top_shap_drivers", [])
         if drivers:
-            shap_text = "SHAP Risk Drivers:\n" + "\n".join(
-                [f"  - {d.get('feature', d.get('feature_name', 'factor'))}: impact={d.get('impact', d.get('shap_contribution', 'N/A'))}" for d in drivers[:5]]
-            )
+            shap_text = "Top ML Risk Drivers (TreeSHAP):\n" + "\n".join([
+                f"  - {d.get('feature_label', d.get('feature_name'))}: +{d.get('shap_value', 0):.2f} pts"
+                for d in drivers[:3]
+            ])
 
     # Format state digest
     state_text = ""
@@ -273,16 +325,34 @@ def _build_prompt(query: str, evidence: Dict[str, Any], history: List[Dict]) -> 
         ])
 
     # Build the full prompt
-    data_sections = "\n\n".join(filter(None, [kpi_text, proj_text, shap_text, state_text, proj_list_text, compare_text, rag_text]))
+    data_sections = "\n\n".join(filter(None, [kpi_text, proj_text, env_text, dep_text, shap_text, state_text, proj_list_text, compare_text, rag_text]))
 
-    prompt = f"""You are Nirman AI Copilot — an expert AI assistant for the Government of India's infrastructure project monitoring platform (MoSPI/PAIMANA). You have access to live PostgreSQL data, XGBoost ML risk scores, SHAP feature attributions, and a 331,206-chunk RAG corpus of official PAIMANA audit and monitoring reports.
 
-You must answer the user's question accurately, intelligently, and completely using ONLY the grounded data below. Do not fabricate numbers. Cite relevant document evidence as [E1], [E2] etc. when referencing RAG chunks.
+    prompt = f"""You are Nirman AI Copilot — an expert AI assistant for the Government of India's infrastructure project monitoring platform (MoSPI/PAIMANA). You have access to live PostgreSQL data, XGBoost ML risk scores, SHAP feature attributions, Dependency Intelligence networks, and a 331,206-chunk RAG corpus of official PAIMANA audit and monitoring reports.
+
+You must answer the user's question accurately, intelligently, and completely using ONLY the grounded data below. Do not fabricate numbers or dependencies. Cite relevant document evidence as [E1], [E2] etc. when referencing RAG chunks.
+
+SYNTHETIC STRESS-TEST & SIMULATION RULES:
+1. When discussing simulated or hypothetical scenario results, clearly state simulation = true context.
+2. Never describe synthetic scenario values as actual project baseline values.
+3. Never claim the project will definitely experience the hypothetical scenario.
+4. Never invent causes, fake weather observations, or non-existent dependencies.
+5. Clearly distinguish MODEL_RECALCULATED from RULE_BASED_SCENARIO.
+6. Use phrases such as: "Under this hypothetical scenario...", "The simulation indicates..."
+7. If model recalculation was unavailable, explicitly state that.
+
+DEPENDENCY INTELLIGENCE RULES:
+1. Never invent dependency relationships.
+2. Never convert INFERRED dependencies into DOCUMENTED facts.
+3. Clearly say when dependency information is INFERRED based on project metadata.
+4. If dependency information is unavailable, state so clearly.
+5. Do not claim causation between dependencies alone and ML risk scores.
+6. Do not blame agencies or departments; use neutral coordination observations (e.g. "coordination bottleneck indicator").
 
 Your response format:
 - Be conversational and analytical — answer like an expert briefing an officer
 - Use markdown: bold key numbers, bullet lists for findings, headers for long analyses
-- For project queries: give cost, delay, risk score, top SHAP drivers, and recommendations
+- For project queries: give cost, delay, risk score, top SHAP drivers, dependency context, and recommendations
 - For portfolio queries: give totals, risk distribution, top problem areas, trends
 - For state/sector queries: give regional breakdown, top risk projects, cost exposure
 - For document queries: quote relevant report excerpts with citation tags
@@ -306,35 +376,35 @@ Your answer (in markdown):"""
 
 def _call_gemini(prompt: str) -> Optional[str]:
     api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
+    if not api_key or api_key.startswith("your_"):
         return None
 
-    # Best free-tier models (fast, capable, free-tier compatible)
-    user_model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite")
-    # Strip 'models/' prefix if user added it
-    user_model = user_model.replace("models/", "")
-    candidates = [user_model, "gemini-2.5-flash-lite", "gemini-3.5-flash-lite", "gemini-2.5-flash"]
-    # Deduplicate while preserving order
+    user_model = os.getenv("GEMINI_MODEL", "gemini-3.6-flash").replace("models/", "").strip('"\'')
+    fallback_model = os.getenv("GEMINI_FALLBACK_MODEL", "gemini-3.5-flash-lite").replace("models/", "").strip('"\'')
+    
+    candidates = [user_model, fallback_model, "gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-flash-latest", "gemini-flash-lite-latest"]
     seen: set = set()
-    candidates = [m for m in candidates if not (m in seen or seen.add(m))]
+    candidates = [m for m in candidates if m and not (m in seen or seen.add(m))]
 
     try:
         from google import genai
         client = genai.Client(api_key=api_key)
         for m in candidates:
             try:
-                # google-genai SDK uses 'models/<name>' format
+                model_name = f"models/{m}" if not m.startswith("models/") else m
                 res = client.models.generate_content(
-                    model=f"models/{m}",
+                    model=model_name,
                     contents=prompt
                 )
                 if res and res.text:
                     print(f"[Assistant] Gemini '{m}' responded successfully.")
                     return res.text.strip()
             except Exception as e:
-                print(f"[Assistant] Model '{m}' failed: {e}")
+                print(f"[Assistant] Gemini model '{m}' call failed: {e}")
     except ImportError as e:
-        print(f"[Assistant] google-genai not available: {e}")
+        print(f"[Assistant] google-genai SDK not installed: {e}")
+    except Exception as e:
+        print(f"[Assistant] Gemini client exception: {e}")
 
     return None
 
@@ -416,7 +486,13 @@ def _deterministic_fallback(query: str, evidence: Dict[str, Any], entities: Dict
 
 # ── CopilotResponse Builder ───────────────────────────────────────────────────
 
-def _build_copilot_response(answer_text: str, evidence: Dict[str, Any], session_id: str, entities: Dict[str, Any]) -> CopilotResponse:
+def _build_copilot_response(
+    answer_text: str,
+    evidence: Dict[str, Any],
+    session_id: str,
+    entities: Dict[str, Any],
+    is_gemini_live: bool = False
+) -> CopilotResponse:
     rag = evidence.get("rag_evidence", [])
     citations = [
         CitationItem(
@@ -449,6 +525,7 @@ def _build_copilot_response(answer_text: str, evidence: Dict[str, Any], session_
         next_actions = ["Show highest-risk projects", "Analyse risk by state", "Examine cost overrun exposure", "Search historical PAIMANA reports"]
 
     tools_used = [k for k in evidence.keys() if evidence[k]]
+    mode_str = "gemini_native" if is_gemini_live else "deterministic_fallback"
 
     return CopilotResponse(
         direct_answer=answer_text,
@@ -460,7 +537,7 @@ def _build_copilot_response(answer_text: str, evidence: Dict[str, Any], session_
         answer=answer_text,
         response=answer_text,
         intent="GEMINI_OPEN_ENDED_INTELLIGENCE",
-        response_mode="gemini_native",
+        response_mode=mode_str,
         tools_used=tools_used,
         citations=citations,
         is_verified=True,
@@ -493,6 +570,7 @@ class AssistantService:
 
         # 4. Call Gemini (real LLM intelligence)
         answer = _call_gemini(prompt)
+        is_gemini_live = bool(answer)
 
         # 5. Fall back to deterministic template only if Gemini unavailable
         if not answer:
@@ -510,7 +588,7 @@ class AssistantService:
         session.history.append({"role": "assistant", "content": answer[:500]})  # store summary
 
         # 7. Build structured response
-        return _build_copilot_response(answer, evidence, sid, entities)
+        return _build_copilot_response(answer, evidence, sid, entities, is_gemini_live=is_gemini_live)
 
     def get_session_history(self, session_id: str) -> Optional[Dict[str, Any]]:
         return self.context_mgr.get_session(session_id).to_dict()

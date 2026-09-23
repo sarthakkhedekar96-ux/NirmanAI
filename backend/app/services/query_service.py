@@ -2,16 +2,7 @@ import sqlite3
 import sqlalchemy
 import pandas as pd
 from backend.app.config import DATABASE_URL, FALLBACK_SQLITE_PATH
-
-
-def get_db_engine():
-    try:
-        engine = sqlalchemy.create_engine(DATABASE_URL)
-        with engine.connect() as conn:
-            conn.execute(sqlalchemy.text("SELECT 1"))
-        return engine
-    except Exception:
-        return sqlalchemy.create_engine(f"sqlite:///{FALLBACK_SQLITE_PATH}")
+from backend.app.core.db_resilience import get_resilient_db_engine as get_db_engine
 
 
 def clean_records(records):
@@ -198,9 +189,9 @@ def compare_projects(project_codes: list):
         ) f ON p.project_code = f.project_code
         WHERE p.project_code IN :codes
     """
+    stmt = sqlalchemy.text(sql).bindparams(sqlalchemy.bindparam("codes", expanding=True))
     with engine.connect() as conn:
-        # Pass tuple for IN clause in SQLAlchemy
-        df = pd.read_sql(sqlalchemy.text(sql), conn, params={"codes": tuple(project_codes)})
+        df = pd.read_sql(stmt, conn, params={"codes": list(project_codes)})
 
     results = []
     for _, row in df.iterrows():

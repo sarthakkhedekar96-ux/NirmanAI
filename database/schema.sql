@@ -82,3 +82,61 @@ CREATE INDEX IF NOT EXISTS idx_feat_reporting_month ON project_features(reportin
 CREATE INDEX IF NOT EXISTS idx_risk_project_code ON risk_scores(project_code);
 CREATE INDEX IF NOT EXISTS idx_risk_reporting_month ON risk_scores(reporting_month);
 CREATE INDEX IF NOT EXISTS idx_risk_category ON risk_scores(risk_category);
+
+-- 5. Environmental Observations Table (Phase 16 Contextual Intelligence)
+CREATE TABLE IF NOT EXISTS environmental_observations (
+    id SERIAL PRIMARY KEY,
+    project_code VARCHAR(32) REFERENCES projects(project_code) ON DELETE CASCADE,
+    latitude NUMERIC(9, 6),
+    longitude NUMERIC(9, 6),
+    temperature_c NUMERIC(5, 2),
+    humidity_pct NUMERIC(5, 2),
+    precipitation_mm NUMERIC(6, 2),
+    wind_speed_kmh NUMERIC(5, 2),
+    condition VARCHAR(64),
+    severity VARCHAR(32),
+    provider VARCHAR(64),
+    raw_reference TEXT,
+    observed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_env_project_code ON environmental_observations(project_code);
+CREATE INDEX IF NOT EXISTS idx_env_observed_at ON environmental_observations(observed_at);
+CREATE INDEX IF NOT EXISTS idx_env_severity ON environmental_observations(severity);
+
+-- 6. Dependency Graph Nodes & Edges Tables (Phase 17 Dependency Intelligence)
+CREATE TABLE IF NOT EXISTS dependency_nodes (
+    id SERIAL PRIMARY KEY,
+    node_type VARCHAR(32) NOT NULL,
+    node_key VARCHAR(128) UNIQUE NOT NULL,
+    display_name VARCHAR(255) NOT NULL,
+    metadata_json TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_dep_nodes_key ON dependency_nodes(node_key);
+CREATE INDEX IF NOT EXISTS idx_dep_nodes_type ON dependency_nodes(node_type);
+
+CREATE TABLE IF NOT EXISTS dependency_edges (
+    id SERIAL PRIMARY KEY,
+    source_node_id INTEGER REFERENCES dependency_nodes(id) ON DELETE CASCADE,
+    target_node_id INTEGER REFERENCES dependency_nodes(id) ON DELETE CASCADE,
+    relationship_type VARCHAR(32) NOT NULL,
+    evidence_status VARCHAR(32) NOT NULL,
+    confidence DOUBLE PRECISION NOT NULL DEFAULT 1.0,
+    evidence_text TEXT,
+    source_reference VARCHAR(255),
+    metadata_json TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_dep_edge UNIQUE (source_node_id, target_node_id, relationship_type)
+);
+
+CREATE INDEX IF NOT EXISTS idx_dep_edges_source ON dependency_edges(source_node_id);
+CREATE INDEX IF NOT EXISTS idx_dep_edges_target ON dependency_edges(target_node_id);
+CREATE INDEX IF NOT EXISTS idx_dep_edges_rel_type ON dependency_edges(relationship_type);
+CREATE INDEX IF NOT EXISTS idx_dep_edges_evidence_status ON dependency_edges(evidence_status);
+
+

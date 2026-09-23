@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from backend.app.schemas.risk import RiskPredictionResponse
 from backend.app.services.risk_engine import risk_engine_service
+from backend.app.core.auth_dependencies import get_current_user
 
-router = APIRouter(prefix="/api/risk", tags=["Risk Intelligence"])
+router = APIRouter(prefix="/api/risk", tags=["Risk Intelligence"], dependencies=[Depends(get_current_user)])
 
 
 @router.get("/predict/{project_code}", response_model=RiskPredictionResponse)

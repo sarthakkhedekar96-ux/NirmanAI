@@ -12,23 +12,27 @@ import {
   Filter,
   CheckCircle2,
   ChevronRight,
-  Info
+  Info,
+  CloudRain
 } from 'lucide-react';
 import api from '../../services/apiClient';
-import { GeographicRiskItem } from '../../types/api';
+import { GeographicRiskItem, RegionalEnvironmentalItem } from '../../types/api';
 import { IndiaMapSvg, MetricType } from './IndiaMapSvg';
 import { findStateFeature } from './indiaMapData';
 
 interface GeographicRiskMapProps {
   onSelectProject?: (code: string) => void;
   onNavigateToPortfolio?: (filterState?: string) => void;
+  hideTable?: boolean;
 }
 
 export const GeographicRiskMap: React.FC<GeographicRiskMapProps> = ({
   onSelectProject,
-  onNavigateToPortfolio
+  onNavigateToPortfolio,
+  hideTable = false
 }) => {
   const [states, setStates] = useState<GeographicRiskItem[]>([]);
+  const [envData, setEnvData] = useState<Record<string, RegionalEnvironmentalItem>>({});
   const [loading, setLoading] = useState(true);
   const [selectedStateName, setSelectedStateName] = useState<string | null>('Maharashtra');
   const [activeMetric, setActiveMetric] = useState<MetricType>('risk');
@@ -46,10 +50,17 @@ export const GeographicRiskMap: React.FC<GeographicRiskMapProps> = ({
 
   const fetchGeographicRisk = () => {
     setLoading(true);
-    api.getGeographicRisk()
-      .then(res => {
-        const list = res.states || [];
+    Promise.all([
+      api.getGeographicRisk(),
+      api.getRegionalEnvironmentalOverview().catch(err => {
+        console.warn("Environmental regional overview unavailable:", err);
+        return { states: {} };
+      })
+    ])
+      .then(([geoRes, envRes]) => {
+        const list = geoRes.states || [];
         setStates(list);
+        setEnvData(envRes.states || {});
         const firstPhysical = list.find(s => findStateFeature(s.state) !== undefined);
         if (firstPhysical && (!selectedStateName || !findStateFeature(selectedStateName))) {
           setSelectedStateName(firstPhysical.state);
@@ -139,6 +150,19 @@ export const GeographicRiskMap: React.FC<GeographicRiskMapProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Explicit Information Banner when Weather Overlay Active */}
+      {activeMetric === 'environment' && (
+        <div className="bg-cyan-950/90 text-cyan-200 border border-cyan-800 p-4 rounded-xl shadow-sm text-xs flex items-start gap-3">
+          <CloudRain className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
+          <div>
+            <h4 className="font-bold text-white text-sm">Weather / Disaster Map Overlay Active</h4>
+            <p className="mt-0.5 leading-relaxed text-cyan-200">
+              Displaying live environmental hazard severity across monitored regions. Environmental severity provides physical context for site operations and does <strong>NOT</strong> modify base ML project risk scores or risk categories.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Top National Summary KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -231,6 +255,16 @@ export const GeographicRiskMap: React.FC<GeographicRiskMapProps> = ({
               >
                 🏗️ Total Projects
               </button>
+              <button
+                onClick={() => setActiveMetric('environment')}
+                className={`px-2.5 py-1 rounded-md font-semibold transition ${
+                  activeMetric === 'environment'
+                    ? 'bg-cyan-600 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                🌧️ Weather Overlay
+              </button>
             </div>
           </div>
 
@@ -244,52 +278,90 @@ export const GeographicRiskMap: React.FC<GeographicRiskMapProps> = ({
             <div className="flex flex-col items-center justify-center p-2">
               <IndiaMapSvg
                 statesData={states}
+                environmentalData={envData}
                 selectedState={selectedStateName}
                 onSelectState={(name) => handleSelectState(name)}
                 activeMetric={activeMetric}
               />
 
-              {/* Dynamic Legend */}
-              <div className="mt-4 w-full flex items-center justify-between text-[11px] text-slate-500 px-4 bg-slate-50 py-2 rounded-lg border border-slate-200">
-                <span className="font-semibold">Low Intensity</span>
-                <div className="flex items-center gap-1.5">
-                  {activeMetric === 'risk' && (
-                    <>
-                      <span className="w-3.5 h-3.5 rounded bg-[#dcfce7] border border-slate-300"></span>
-                      <span className="w-3.5 h-3.5 rounded bg-[#fef08a] border border-slate-300"></span>
-                      <span className="w-3.5 h-3.5 rounded bg-[#fed7aa] border border-slate-300"></span>
-                      <span className="w-3.5 h-3.5 rounded bg-[#f87171] border border-slate-300"></span>
-                      <span className="w-3.5 h-3.5 rounded bg-[#b91c1c] border border-slate-300"></span>
-                    </>
-                  )}
-                  {activeMetric === 'cost' && (
-                    <>
-                      <span className="w-3.5 h-3.5 rounded bg-[#dcfce7] border border-slate-300"></span>
-                      <span className="w-3.5 h-3.5 rounded bg-[#fed7aa] border border-slate-300"></span>
-                      <span className="w-3.5 h-3.5 rounded bg-[#fb923c] border border-slate-300"></span>
-                      <span className="w-3.5 h-3.5 rounded bg-[#ea580c] border border-slate-300"></span>
-                      <span className="w-3.5 h-3.5 rounded bg-[#991b1b] border border-slate-300"></span>
-                    </>
-                  )}
-                  {activeMetric === 'delay' && (
-                    <>
-                      <span className="w-3.5 h-3.5 rounded bg-[#f1f5f9] border border-slate-300"></span>
-                      <span className="w-3.5 h-3.5 rounded bg-[#fde047] border border-slate-300"></span>
-                      <span className="w-3.5 h-3.5 rounded bg-[#fb923c] border border-slate-300"></span>
-                      <span className="w-3.5 h-3.5 rounded bg-[#dc2626] border border-slate-300"></span>
-                      <span className="w-3.5 h-3.5 rounded bg-[#7f1d1d] border border-slate-300"></span>
-                    </>
-                  )}
-                  {activeMetric === 'projects' && (
-                    <>
-                      <span className="w-3.5 h-3.5 rounded bg-[#dbeafe] border border-slate-300"></span>
-                      <span className="w-3.5 h-3.5 rounded bg-[#93c5fd] border border-slate-300"></span>
-                      <span className="w-3.5 h-3.5 rounded bg-[#3b82f6] border border-slate-300"></span>
-                      <span className="w-3.5 h-3.5 rounded bg-[#1d4ed8] border border-slate-300"></span>
-                    </>
-                  )}
-                </div>
-                <span className="font-semibold">High Intensity</span>
+              {/* Dynamic Map Legend */}
+              <div className="mt-4 w-full text-[11px] text-slate-600 px-4 bg-slate-50 py-2.5 rounded-lg border border-slate-200">
+                {activeMetric === 'environment' ? (
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between font-bold text-gov-navy text-xs">
+                      <span>Weather / Disaster Severity Legend (Environmental Context)</span>
+                      <span className="text-[10px] text-slate-500 font-normal">Physical Hazards Only</span>
+                    </div>
+                    <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[10px]">
+                      <div className="flex items-center gap-1">
+                        <span className="w-3 h-3 rounded bg-[#10b981] border border-slate-300"></span>
+                        <span>NORMAL</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="w-3 h-3 rounded bg-[#0284c7] border border-slate-300"></span>
+                        <span>WATCH</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="w-3 h-3 rounded bg-[#f59e0b] border border-slate-300"></span>
+                        <span>ELEVATED</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="w-3 h-3 rounded bg-[#ea580c] border border-slate-300"></span>
+                        <span>HIGH</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="w-3 h-3 rounded bg-[#9333ea] border border-slate-300"></span>
+                        <span>SEVERE</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="w-3 h-3 rounded bg-[#64748b] border border-slate-300"></span>
+                        <span>UNAVAILABLE</span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold">Low Intensity</span>
+                    <div className="flex items-center gap-1.5">
+                      {activeMetric === 'risk' && (
+                        <>
+                          <span className="w-3.5 h-3.5 rounded bg-[#dcfce7] border border-slate-300"></span>
+                          <span className="w-3.5 h-3.5 rounded bg-[#fef08a] border border-slate-300"></span>
+                          <span className="w-3.5 h-3.5 rounded bg-[#fed7aa] border border-slate-300"></span>
+                          <span className="w-3.5 h-3.5 rounded bg-[#f87171] border border-slate-300"></span>
+                          <span className="w-3.5 h-3.5 rounded bg-[#b91c1c] border border-slate-300"></span>
+                        </>
+                      )}
+                      {activeMetric === 'cost' && (
+                        <>
+                          <span className="w-3.5 h-3.5 rounded bg-[#dcfce7] border border-slate-300"></span>
+                          <span className="w-3.5 h-3.5 rounded bg-[#fed7aa] border border-slate-300"></span>
+                          <span className="w-3.5 h-3.5 rounded bg-[#fb923c] border border-slate-300"></span>
+                          <span className="w-3.5 h-3.5 rounded bg-[#ea580c] border border-slate-300"></span>
+                          <span className="w-3.5 h-3.5 rounded bg-[#991b1b] border border-slate-300"></span>
+                        </>
+                      )}
+                      {activeMetric === 'delay' && (
+                        <>
+                          <span className="w-3.5 h-3.5 rounded bg-[#f1f5f9] border border-slate-300"></span>
+                          <span className="w-3.5 h-3.5 rounded bg-[#fde047] border border-slate-300"></span>
+                          <span className="w-3.5 h-3.5 rounded bg-[#fb923c] border border-slate-300"></span>
+                          <span className="w-3.5 h-3.5 rounded bg-[#dc2626] border border-slate-300"></span>
+                          <span className="w-3.5 h-3.5 rounded bg-[#7f1d1d] border border-slate-300"></span>
+                        </>
+                      )}
+                      {activeMetric === 'projects' && (
+                        <>
+                          <span className="w-3.5 h-3.5 rounded bg-[#dbeafe] border border-slate-300"></span>
+                          <span className="w-3.5 h-3.5 rounded bg-[#93c5fd] border border-slate-300"></span>
+                          <span className="w-3.5 h-3.5 rounded bg-[#3b82f6] border border-slate-300"></span>
+                          <span className="w-3.5 h-3.5 rounded bg-[#1d4ed8] border border-slate-300"></span>
+                        </>
+                      )}
+                    </div>
+                    <span className="font-semibold">High Intensity</span>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -425,106 +497,108 @@ export const GeographicRiskMap: React.FC<GeographicRiskMapProps> = ({
         </div>
       </div>
 
-      {/* Full State/UT Risk Table Section */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden space-y-4 p-5">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-3">
-          <div>
-            <h3 className="text-base font-bold text-gov-navy">
-              Comprehensive State &amp; UT Surveillance Table
-            </h3>
-            <p className="text-xs text-slate-500">
-              Click any state row to highlight its region on the map
-            </p>
+      {/* Full State/UT Risk Table Section (Hidden when hideTable=true on Dashboard) */}
+      {!hideTable && (
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden space-y-4 p-5">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-3">
+            <div>
+              <h3 className="text-base font-bold text-gov-navy">
+                Comprehensive State &amp; UT Surveillance Table
+              </h3>
+              <p className="text-xs text-slate-500">
+                Click any state row to highlight its region on the map
+              </p>
+            </div>
+
+            {/* Table Search Input */}
+            <div className="relative w-64">
+              <input
+                type="text"
+                placeholder="Search State / UT..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-slate-50 text-xs rounded-md pl-8 pr-3 py-1.5 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+            </div>
           </div>
 
-          {/* Table Search Input */}
-          <div className="relative w-64">
-            <input
-              type="text"
-              placeholder="Search State / UT..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-50 text-xs rounded-md pl-8 pr-3 py-1.5 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
-          </div>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr className="bg-slate-900 text-slate-200 font-semibold border-b border-slate-800">
-                <th className="py-3 px-4">State / Union Territory</th>
-                <th
-                  className="py-3 px-4 text-center cursor-pointer hover:text-blue-300"
-                  onClick={() => toggleSort('total_projects')}
-                >
-                  Total Projects {sortField === 'total_projects' ? (sortOrder === 'desc' ? '↓' : '↑') : ''}
-                </th>
-                <th
-                  className="py-3 px-4 text-center cursor-pointer hover:text-blue-300"
-                  onClick={() => toggleSort('risk_count')}
-                >
-                  High / Critical Risk {sortField === 'risk_count' ? (sortOrder === 'desc' ? '↓' : '↑') : ''}
-                </th>
-                <th
-                  className="py-3 px-4 text-right cursor-pointer hover:text-blue-300"
-                  onClick={() => toggleSort('total_cost_overrun_cr')}
-                >
-                  Cumulative Overrun (₹ Cr) {sortField === 'total_cost_overrun_cr' ? (sortOrder === 'desc' ? '↓' : '↑') : ''}
-                </th>
-                <th
-                  className="py-3 px-4 text-right cursor-pointer hover:text-blue-300"
-                  onClick={() => toggleSort('avg_delay_months')}
-                >
-                  Avg Delay (Months) {sortField === 'avg_delay_months' ? (sortOrder === 'desc' ? '↓' : '↑') : ''}
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 font-sans">
-              {filteredStates.map((st, idx) => {
-                const isSelected = selectedStateName && selectedStateName.toLowerCase() === st.state.toLowerCase();
-                const totalRisk = st.high_risk_projects + st.critical_risk_projects;
-                const isPhysical = findStateFeature(st.state) !== undefined;
-
-                return (
-                  <tr
-                    key={idx}
-                    onClick={() => handleSelectState(st.state)}
-                    className={`transition ${
-                      isPhysical ? 'cursor-pointer' : 'cursor-default'
-                    } ${
-                      isSelected ? 'bg-blue-50/90 font-semibold' : 'hover:bg-slate-50'
-                    }`}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-slate-900 text-slate-200 font-semibold border-b border-slate-800">
+                  <th className="py-3 px-4">State / Union Territory</th>
+                  <th
+                    className="py-3 px-4 text-center cursor-pointer hover:text-blue-300"
+                    onClick={() => toggleSort('total_projects')}
                   >
-                    <td className="py-3 px-4 font-bold text-gov-navy flex items-center gap-2">
-                      {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>}
-                      <span>{st.state}</span>
-                      {!isPhysical && (
-                        <span className="text-[9px] font-normal text-slate-500 bg-slate-200 px-1.5 py-0.2 rounded">Non-Spatial</span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-center font-mono text-slate-700">{st.total_projects}</td>
-                    <td className="py-3 px-4 text-center font-mono">
-                      <span className={`px-2 py-0.5 rounded font-bold ${
-                        totalRisk > 0 ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-emerald-100 text-emerald-700'
-                      }`}>
-                        {totalRisk}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-right font-mono font-bold text-red-600">
-                      ₹{st.total_cost_overrun_cr.toLocaleString('en-IN')} Cr
-                    </td>
-                    <td className="py-3 px-4 text-right font-mono text-amber-700">
-                      {st.avg_delay_months.toFixed(1)} Mo
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                    Total Projects {sortField === 'total_projects' ? (sortOrder === 'desc' ? '↓' : '↑') : ''}
+                  </th>
+                  <th
+                    className="py-3 px-4 text-center cursor-pointer hover:text-blue-300"
+                    onClick={() => toggleSort('risk_count')}
+                  >
+                    High / Critical Risk {sortField === 'risk_count' ? (sortOrder === 'desc' ? '↓' : '↑') : ''}
+                  </th>
+                  <th
+                    className="py-3 px-4 text-right cursor-pointer hover:text-blue-300"
+                    onClick={() => toggleSort('total_cost_overrun_cr')}
+                  >
+                    Cumulative Overrun (₹ Cr) {sortField === 'total_cost_overrun_cr' ? (sortOrder === 'desc' ? '↓' : '↑') : ''}
+                  </th>
+                  <th
+                    className="py-3 px-4 text-right cursor-pointer hover:text-blue-300"
+                    onClick={() => toggleSort('avg_delay_months')}
+                  >
+                    Avg Delay (Months) {sortField === 'avg_delay_months' ? (sortOrder === 'desc' ? '↓' : '↑') : ''}
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 font-sans">
+                {filteredStates.map((st, idx) => {
+                  const isSelected = selectedStateName && selectedStateName.toLowerCase() === st.state.toLowerCase();
+                  const totalRisk = st.high_risk_projects + st.critical_risk_projects;
+                  const isPhysical = findStateFeature(st.state) !== undefined;
+
+                  return (
+                    <tr
+                      key={idx}
+                      onClick={() => handleSelectState(st.state)}
+                      className={`transition ${
+                        isPhysical ? 'cursor-pointer' : 'cursor-default'
+                      } ${
+                        isSelected ? 'bg-blue-50/90 font-semibold' : 'hover:bg-slate-50'
+                      }`}
+                    >
+                      <td className="py-3 px-4 font-bold text-gov-navy flex items-center gap-2">
+                        {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>}
+                        <span>{st.state}</span>
+                        {!isPhysical && (
+                          <span className="text-[9px] font-normal text-slate-500 bg-slate-200 px-1.5 py-0.2 rounded">Non-Spatial</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-center font-mono text-slate-700">{st.total_projects}</td>
+                      <td className="py-3 px-4 text-center font-mono">
+                        <span className={`px-2 py-0.5 rounded font-bold ${
+                          totalRisk > 0 ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-emerald-100 text-emerald-700'
+                        }`}>
+                          {totalRisk}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-right font-mono font-bold text-red-600">
+                        ₹{st.total_cost_overrun_cr.toLocaleString('en-IN')} Cr
+                      </td>
+                      <td className="py-3 px-4 text-right font-mono text-amber-700">
+                        {st.avg_delay_months.toFixed(1)} Mo
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

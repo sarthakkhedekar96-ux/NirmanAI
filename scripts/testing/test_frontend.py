@@ -15,11 +15,17 @@ sys.path.insert(0, BASE_DIR)
 
 API_HOST = "http://127.0.0.1:8000"
 
+from test_auth_helper import get_test_auth_headers
+
 def get(path):
     url = f"{API_HOST}{path}"
+    headers = get_test_auth_headers(api_host=API_HOST)
+    req = urllib.request.Request(url, headers=headers)
     try:
-        req = urllib.request.urlopen(url, timeout=4)
-        return req.status, dict(req.headers), req.read().decode('utf-8')
+        with urllib.request.urlopen(req, timeout=4) as response:
+            return response.status, dict(response.headers), response.read().decode('utf-8')
+    except urllib.error.HTTPError as e:
+        return e.code, dict(e.headers), e.read().decode('utf-8')
     except Exception as e:
         return 0, {}, str(e)
 

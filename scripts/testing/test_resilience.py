@@ -54,14 +54,16 @@ def run_tests():
     })
 
     # DBFAIL-003: REST Endpoint Error Sanitization (No Raw Stack Tracebacks Exposed)
+    from test_auth_helper import get_test_auth_headers
     invalid_url = "http://127.0.0.1:8000/api/projects/INVALID_NONEXISTENT_PROJECT_CODE_99999"
     no_traceback_exposed = False
     status_code = 0
     resp_body = ""
 
     try:
-        req = urllib.request.urlopen(invalid_url, timeout=3)
-        status_code = req.status
+        req = urllib.request.Request(invalid_url, headers=get_test_auth_headers(api_host="http://127.0.0.1:8000"))
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            status_code = resp.status
     except urllib.error.HTTPError as e:
         status_code = e.code
         resp_body = e.read().decode('utf-8')

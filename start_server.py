@@ -5,6 +5,13 @@ import time
 import subprocess
 import urllib.request
 
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+        sys.stderr.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
 def main():
     print("=======================================================")
     print("       STARTING NIRMAN AI WEB PLATFORM SERVER          ")
@@ -15,10 +22,16 @@ def main():
 
     # Detect virtualenv python on Windows or Unix
     python_venv = sys.executable
-    venv_unix = os.path.join(project_root, ".venv", "bin", "python")
+    venv_xgb_win = os.path.join(project_root, ".venv_xgb", "Scripts", "python.exe")
+    venv_xgb_unix = os.path.join(project_root, ".venv_xgb", "bin", "python")
     venv_win = os.path.join(project_root, ".venv", "Scripts", "python.exe")
+    venv_unix = os.path.join(project_root, ".venv", "bin", "python")
     
-    if os.path.exists(venv_win):
+    if os.path.exists(venv_xgb_win):
+        python_venv = venv_xgb_win
+    elif os.path.exists(venv_xgb_unix):
+        python_venv = venv_xgb_unix
+    elif os.path.exists(venv_win):
         python_venv = venv_win
     elif os.path.exists(venv_unix):
         python_venv = venv_unix

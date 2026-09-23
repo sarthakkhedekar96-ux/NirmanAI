@@ -1,9 +1,14 @@
 import json
 import sqlalchemy
 import pandas as pd
-import joblib
+try:
+    import joblib
+except ImportError:
+    joblib = None
 from backend.app.config import MODEL_VERSION_DIR, DATABASE_URL, FALLBACK_SQLITE_PATH
 
+
+from backend.app.core.db_resilience import get_resilient_db_engine
 
 class RiskEngineService:
     def __init__(self):
@@ -11,24 +16,30 @@ class RiskEngineService:
         self.xgb_path = MODEL_VERSION_DIR / "xgboost_model.joblib"
         self.meta_path = MODEL_VERSION_DIR / "model_metadata.json"
         
-        self.calibrated_model = joblib.load(self.calibrator_path) if self.calibrator_path.exists() else None
-        self.xgb_model = joblib.load(self.xgb_path) if self.xgb_path.exists() else None
+        try:
+            self.calibrated_model = joblib.load(self.calibrator_path) if self.calibrator_path.exists() else None
+        except Exception:
+            self.calibrated_model = None
+
+        try:
+            self.xgb_model = joblib.load(self.xgb_path) if self.xgb_path.exists() else None
+        except Exception:
+            self.xgb_model = None
         
-        with open(self.meta_path, "r") as f:
-            self.metadata = json.load(f)
+        try:
+            with open(self.meta_path, "r") as f:
+                self.metadata = json.load(f)
+        except Exception:
+            self.metadata = {"model_version": "risk_engine_v1", "operational_threshold": 0.28}
             
         self.operational_threshold = self.metadata.get("operational_threshold", 0.28)
 
     def get_db_engine(self):
-        try:
-            engine = sqlalchemy.create_engine(DATABASE_URL)
-            with engine.connect() as conn:
-                conn.execute(sqlalchemy.text("SELECT 1"))
-            return engine
-        except Exception:
-            return sqlalchemy.create_engine(f"sqlite:///{FALLBACK_SQLITE_PATH}")
+        return get_resilient_db_engine()
 
     def get_project_risk_assessment(self, project_code: str):
+        if not project_code or str(project_code).strip().upper() in ("UNKNOWN", "NONE", "NULL", ""):
+            return None
         engine = self.get_db_engine()
         query = """
             SELECT 

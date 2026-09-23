@@ -95,8 +95,9 @@ Respond with ONLY raw valid JSON (no markdown fences) matching this structure:
             try:
                 from google import genai
                 client = genai.Client(api_key=api_key)
+                model_name = os.getenv("GEMINI_MODEL", "gemini-3.6-flash").replace("models/", "")
                 res = client.models.generate_content(
-                    model=os.getenv("GEMINI_MODEL", "gemini-1.5-flash"),
+                    model=f"models/{model_name}",
                     contents=prompt
                 )
                 text = res.text.strip()

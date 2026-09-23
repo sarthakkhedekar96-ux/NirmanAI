@@ -14,11 +14,15 @@ sys.path.insert(0, BASE_DIR)
 
 API_HOST = "http://127.0.0.1:8000"
 
+from test_auth_helper import get_test_auth_headers
+
 def get(path):
     url = f"{API_HOST}{path}"
+    headers = get_test_auth_headers(api_host=API_HOST)
+    req = urllib.request.Request(url, headers=headers)
     try:
-        req = urllib.request.urlopen(url, timeout=4)
-        return req.status, dict(req.headers), req.read().decode('utf-8')
+        with urllib.request.urlopen(req, timeout=4) as response:
+            return response.status, dict(response.headers), response.read().decode('utf-8')
     except urllib.error.HTTPError as e:
         return e.code, dict(e.headers), e.read().decode('utf-8')
     except Exception as e:
@@ -27,12 +31,13 @@ def get(path):
 def post_raw(path, body_bytes, headers_dict=None):
     url = f"{API_HOST}{path}"
     hdrs = {'Content-Type': 'application/json'}
+    hdrs.update(get_test_auth_headers(api_host=API_HOST))
     if headers_dict:
         hdrs.update(headers_dict)
     req = urllib.request.Request(url, data=body_bytes, headers=hdrs, method='POST')
     try:
-        res = urllib.request.urlopen(req, timeout=4)
-        return res.status, dict(res.headers), res.read().decode('utf-8')
+        with urllib.request.urlopen(req, timeout=4) as res:
+            return res.status, dict(res.headers), res.read().decode('utf-8')
     except urllib.error.HTTPError as e:
         return e.code, dict(e.headers), e.read().decode('utf-8')
     except Exception as e:

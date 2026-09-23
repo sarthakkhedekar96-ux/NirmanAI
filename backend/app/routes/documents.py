@@ -1,11 +1,12 @@
 from typing import Optional
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
 
 from backend.app.schemas.document import SearchResponse
 from backend.app.services.retrieval_service import RetrievalService
 from backend.app.services.document_service import DocumentService
+from backend.app.core.auth_dependencies import get_current_user
 
-router = APIRouter(prefix="/api/documents", tags=["PAIMANA Knowledge & RAG Retrieval"])
+router = APIRouter(prefix="/api/documents", tags=["PAIMANA Knowledge & RAG Retrieval"], dependencies=[Depends(get_current_user)])
 
 retrieval_service = RetrievalService()
 document_service = DocumentService()
@@ -47,12 +48,17 @@ def search_documents(
 
 
 
+from backend.app.services.project_service import get_project_details
+
 @router.get("/project/{project_code}")
 def get_project_documents(project_code: str, limit: int = Query(10, ge=1, le=100)):
     """Retrieve historical PAIMANA document chunks referencing a specific project code."""
-    docs = document_service.get_project_documents(project_code=project_code, limit=limit)
-    if not docs:
-        raise HTTPException(status_code=404, detail=f"No document chunks found for project code '{project_code}'.")
+    proj = get_project_details(project_code)
+    if not proj:
+        raise HTTPException(status_code=404, detail=f"Project code '{project_code}' not found.")
+
+    limit_val = limit.default if hasattr(limit, 'default') else int(limit)
+    docs = document_service.get_project_documents(project_code=project_code, limit=limit_val) or []
     return {
         "project_code": project_code,
         "total_documents": len(docs),

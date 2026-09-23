@@ -15,11 +15,21 @@ from backend.app.services.risk_engine import risk_engine_service
 
 API_HOST = "http://127.0.0.1:8000"
 
+from test_auth_helper import get_test_auth_headers
+
 def get_api(path):
     url = f"{API_HOST}{path}"
+    headers = get_test_auth_headers(api_host=API_HOST)
+    req = urllib.request.Request(url, headers=headers)
     try:
-        req = urllib.request.urlopen(url, timeout=4)
-        return req.status, json.loads(req.read().decode('utf-8'))
+        with urllib.request.urlopen(req, timeout=4) as response:
+            return response.status, json.loads(response.read().decode('utf-8'))
+    except urllib.error.HTTPError as e:
+        body_text = e.read().decode('utf-8')
+        try:
+            return e.code, json.loads(body_text)
+        except Exception:
+            return e.code, {"detail": body_text}
     except Exception as e:
         return 0, {"error": str(e)}
 

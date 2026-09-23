@@ -16,13 +16,23 @@ from backend.app.services.cache_service import cache_service
 
 API_HOST = "http://127.0.0.1:8000"
 
+from test_auth_helper import get_test_auth_headers
+
 def get_api(path):
     url = f"{API_HOST}{path}"
+    headers = get_test_auth_headers(api_host=API_HOST)
+    req = urllib.request.Request(url, headers=headers)
     try:
         t0 = time.time()
-        req = urllib.request.urlopen(url, timeout=4)
-        t1 = time.time()
-        return req.status, json.loads(req.read().decode('utf-8')), (t1 - t0) * 1000.0
+        with urllib.request.urlopen(req, timeout=4) as response:
+            t1 = time.time()
+            return response.status, json.loads(response.read().decode('utf-8')), (t1 - t0) * 1000.0
+    except urllib.error.HTTPError as e:
+        body_text = e.read().decode('utf-8')
+        try:
+            return e.code, json.loads(body_text), 0.0
+        except Exception:
+            return e.code, {"detail": body_text}, 0.0
     except Exception as e:
         return 0, {"error": str(e)}, 0.0
 

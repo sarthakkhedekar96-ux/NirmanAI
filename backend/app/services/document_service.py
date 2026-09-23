@@ -34,10 +34,15 @@ class DocumentService:
             conn.close()
 
     def get_project_documents(self, project_code: str, limit: int = 10) -> List[Dict[str, Any]]:
-        """Retrieve historical document chunks associated with a specific project code."""
+        """Retrieve historical document chunks associated with a specific project code via dynamic 3-tier retrieval."""
+        code = str(project_code).strip()
+        if not code:
+            return []
+
         conn = self._get_connection()
         try:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                # Tier 1: Exact structured metadata match (project_code column or JSONB project_codes)
                 cur.execute("""
                     SELECT chunk_id, content, source_file, relative_path, page_number,
                            reporting_month, reporting_year, document_type, project_code, metadata
@@ -45,13 +50,35 @@ class DocumentService:
                     WHERE project_code = %s OR metadata->>'project_codes' LIKE %s
                     ORDER BY reporting_month DESC, page_number ASC
                     LIMIT %s;
-                """, (project_code, f"%{project_code}%", limit))
+                """, (code, f"%{code}%", limit))
                 rows = cur.fetchall()
-                
+                match_type = "METADATA_EXACT"
+
+                # Tier 2: Exact parameterized content fallback (if Tier 1 returned 0 chunks)
+                if not rows:
+                    cur.execute("""
+                        SELECT chunk_id, content, source_file, relative_path, page_number,
+                               reporting_month, reporting_year, document_type, project_code, metadata
+                        FROM document_chunks
+                        WHERE content LIKE %s
+                        ORDER BY reporting_month DESC, page_number ASC
+                        LIMIT %s;
+                    """, (f"%{code}%", limit))
+                    rows = cur.fetchall()
+                    match_type = "CONTENT_FALLBACK"
+
+                # Tier 3: Honest zero state if both Tier 1 and Tier 2 return 0 chunks
+                if not rows:
+                    return []
+
                 results = []
                 for r in rows:
                     res = dict(r)
-                    res["citation"] = f"PAIMANA Report ({r['reporting_month']}), File: {r['source_file']}, Page {r['page_number']} - Project {project_code}"
+                    meta = dict(res.get("metadata") or {})
+                    meta["retrieval_match_type"] = match_type
+                    res["metadata"] = meta
+                    res["match_type"] = match_type
+                    res["citation"] = f"PAIMANA Report ({r['reporting_month']}), File: {r['source_file']}, Page {r['page_number']} - Project {code}" + (" (Content Match)" if match_type == "CONTENT_FALLBACK" else "")
                     results.append(res)
                 return results
         finally:

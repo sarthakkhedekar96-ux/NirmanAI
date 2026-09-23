@@ -1,10 +1,11 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from backend.app.schemas.assistant import AssistantChatRequest, CopilotResponse
 from backend.app.services.assistant_service import AssistantService
 from backend.app.services.capability_registry import CapabilityRegistry
 from backend.app.services.insight_service import InsightService
+from backend.app.core.auth_dependencies import get_current_user
 
-router = APIRouter(prefix="/api/assistant", tags=["Nirman AI Assistant"])
+router = APIRouter(prefix="/api/assistant", tags=["Nirman AI Assistant"], dependencies=[Depends(get_current_user)])
 assistant_service = AssistantService()
 
 

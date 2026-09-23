@@ -13,7 +13,7 @@ if _env_file.exists():
         if _line and not _line.startswith("#") and "=" in _line:
             _key, _, _val = _line.partition("=")
             _key = _key.strip()
-            _val = _val.strip()
+            _val = _val.strip().strip('"\'')
             if _key and _key not in os.environ:  # don't override existing shell env vars
                 os.environ[_key] = _val
 

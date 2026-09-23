@@ -2,16 +2,7 @@ import sqlite3
 import sqlalchemy
 import pandas as pd
 from backend.app.config import DATABASE_URL, FALLBACK_SQLITE_PATH
-
-
-def get_db_engine():
-    try:
-        engine = sqlalchemy.create_engine(DATABASE_URL)
-        with engine.connect() as conn:
-            conn.execute(sqlalchemy.text("SELECT 1"))
-        return engine
-    except Exception:
-        return sqlalchemy.create_engine(f"sqlite:///{FALLBACK_SQLITE_PATH}")
+from backend.app.core.db_resilience import get_resilient_db_engine as get_db_engine
 
 
 def get_executive_summary():

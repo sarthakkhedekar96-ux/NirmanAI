@@ -27,6 +27,8 @@ import test_frontend
 import test_performance
 import test_regression
 import test_e2e
+import test_dependencies
+import test_satellite
 
 import subprocess
 import urllib.request
@@ -45,6 +47,12 @@ def ensure_server_running():
     time.sleep(4)
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        try:
+            sys.stdout.reconfigure(encoding="utf-8")
+        except Exception:
+            pass
+
     print("===========================================================================")
     print("      PROJECT NIRMAN — PHASE 10 FULL SYSTEM QA & DEFECT ISOLATION          ")
     print("===========================================================================\n")
@@ -67,7 +75,9 @@ def main():
         ("12. Frontend SPA Delivery", test_frontend.run_tests),
         ("13. Latency & Concurrency", test_performance.run_tests),
         ("14. Model Regression & Leakage", test_regression.run_tests),
-        ("15. End-to-End User Journeys", test_e2e.run_tests)
+        ("15. End-to-End User Journeys", test_e2e.run_tests),
+        ("16. Dependency Intelligence & Bottlenecks", test_dependencies.run_tests),
+        ("17. Satellite Change Detection & Monitoring", test_satellite.run_tests)
     ]
 
     all_results = []
@@ -76,7 +86,7 @@ def main():
     start_time = time.time()
 
     for suite_name, suite_fn in suites:
-        print(f"▶ Running Suite: {suite_name} ...", end=" ", flush=True)
+        print(f" Running Suite: {suite_name} ...", end=" ", flush=True)
         try:
             res_list = suite_fn()
             all_results.extend(res_list)
@@ -85,10 +95,10 @@ def main():
             suite_total = len(res_list)
             category_summary[suite_name] = {"passed": suite_passed, "total": suite_total}
 
-            status_str = f"✅ PASSED ({suite_passed}/{suite_total})" if suite_passed == suite_total else f"⚠️ ISSUES ({suite_passed}/{suite_total})"
+            status_str = f"[PASSED] ({suite_passed}/{suite_total})" if suite_passed == suite_total else f"[ISSUES] ({suite_passed}/{suite_total})"
             print(status_str)
         except Exception as e:
-            print(f"❌ ERROR: {e}")
+            print(f"[ERROR] {e}")
             category_summary[suite_name] = {"passed": 0, "total": 1, "error": str(e)}
 
     elapsed_sec = time.time() - start_time
@@ -117,9 +127,9 @@ def main():
     print(f"Execution Time:         {elapsed_sec:.2f} seconds")
     print("===========================================================================")
     if is_ready:
-        print("STATUS: ✅ PRODUCTION READY — ALL STACK LAYERS VERIFIED 100%\n")
+        print("STATUS: PRODUCTION READY — ALL STACK LAYERS VERIFIED 100%\n")
     else:
-        print("STATUS: ❌ DEPLOYMENT BLOCKED — DEFECTS DETECTED\n")
+        print("STATUS: DEPLOYMENT BLOCKED — DEFECTS DETECTED\n")
 
     # Generate Report File: documentation/phase10_full_system_qa.md
     doc_dir = os.path.join(BASE_DIR, "documentation")
@@ -167,10 +177,10 @@ def main():
         hint_str = f" (*Hint: {r.get('hint')}*)" if not r["passed"] and r.get("hint") else ""
         md_lines.append(f"| `{r['id']}` | {r['category']} | {r['name']} | **{sev}** | {st_badge} | {actual_str}{hint_str} |")
 
-    with open(report_path, "w") as f:
+    with open(report_path, "w", encoding="utf-8") as f:
         f.write("\n".join(md_lines))
 
-    print(f"📄 Detailed QA Report generated at: {report_path}\n")
+    print(f"Detailed QA Report generated at: {report_path}\n")
 
 if __name__ == "__main__":
     main()

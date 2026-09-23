@@ -40,13 +40,14 @@ class LLMService:
 
         provider, api_key = self._get_provider()
 
-        # 2. Gemini LLM Integration (Free-Tier Compatible Models)
-        if provider == "gemini" and api_key:
-            # Free tier candidate models in preference order (Fastest & Free Tier Compliant)
-            user_model = os.getenv("GEMINI_MODEL")
-            candidate_models = [m for m in [user_model, "gemini-1.5-flash", "gemini-2.0-flash-lite", "gemini-2.0-flash", "gemini-1.5-pro"] if m]
+        # 2. Gemini LLM Integration
+        if provider == "gemini" and api_key and not api_key.startswith("your_"):
+            user_model = os.getenv("GEMINI_MODEL", "gemini-3.6-flash").replace("models/", "").strip('"\'')
+            fallback_model = os.getenv("GEMINI_FALLBACK_MODEL", "gemini-3.5-flash-lite").replace("models/", "").strip('"\'')
+            candidate_models = [user_model, fallback_model, "gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-flash-latest", "gemini-flash-lite-latest"]
+            seen: set = set()
+            candidate_models = [m for m in candidate_models if m and not (m in seen or seen.add(m))]
 
-            # Try new google-genai SDK first
             try:
                 from google import genai
                 client = genai.Client(api_key=api_key)
@@ -58,8 +59,9 @@ class LLMService:
                     "Include document evidence citation tags like [E1], [E2] where applicable."
                 )
 
-                for model_name in candidate_models:
+                for m in candidate_models:
                     try:
+                        model_name = f"models/{m}" if not m.startswith("models/") else m
                         response = client.models.generate_content(
                             model=model_name,
                             contents=prompt_context,
@@ -68,25 +70,9 @@ class LLMService:
                         if response and response.text:
                             return response.text.strip()
                     except Exception as model_err:
-                        print(f"[LLMService] Gemini model '{model_name}' attempt failed ({model_err}). Trying fallback candidate...")
+                        print(f"[LLMService] Gemini model '{m}' attempt failed ({model_err}).")
                         continue
 
-            except ImportError:
-                pass
-
-            # Fallback to google.generativeai legacy SDK
-            try:
-                import google.generativeai as genai
-                genai.configure(api_key=api_key)
-                
-                for model_name in candidate_models:
-                    try:
-                        model = genai.GenerativeModel(model_name)
-                        res = model.generate_content(prompt_context)
-                        if res and res.text:
-                            return res.text.strip()
-                    except Exception:
-                        continue
             except Exception as e:
                 print(f"[LLMService] Gemini call failed ({e}). Falling back to Grounded Template Generator.")
 

@@ -123,3 +123,51 @@ class RateLimitingMiddleware(BaseHTTPMiddleware):
         response.headers["X-RateLimit-Remaining"] = str(max(0, limit - count))
         return response
 
+
+# Process-Local In-Memory Login Rate Limiter (Single-Instance Deployment)
+# Designed to be easily replaced with Redis / distributed storage in multi-worker cluster deployments.
+_LOGIN_ATTEMPTS: Dict[str, Tuple[int, float]] = {}
+LOGIN_MAX_FAILED_ATTEMPTS = 5
+LOGIN_LOCKOUT_WINDOW_SECONDS = 900  # 15 minutes
+
+
+def check_login_rate_limit(client_ip: str) -> None:
+    """
+    Verifies whether client IP is currently locked out due to excessive failed login attempts.
+    Raises HTTPException(429) if limit exceeded.
+    """
+    now = time.time()
+    if client_ip in _LOGIN_ATTEMPTS:
+        failed_count, first_failed_time = _LOGIN_ATTEMPTS[client_ip]
+        if now - first_failed_time > LOGIN_LOCKOUT_WINDOW_SECONDS:
+            # Reset expired window
+            _LOGIN_ATTEMPTS.pop(client_ip, None)
+        elif failed_count >= LOGIN_MAX_FAILED_ATTEMPTS:
+            remaining_seconds = int(LOGIN_LOCKOUT_WINDOW_SECONDS - (now - first_failed_time))
+            logger.warning(f"🔒 Login rate limit enforced for IP {client_ip}. Retry in {remaining_seconds}s.")
+            raise HTTPException(
+                status_code=429,
+                detail=f"Too many failed login attempts. Please try again in {max(1, remaining_seconds // 60)} minutes."
+            )
+
+
+def record_failed_login_attempt(client_ip: str) -> None:
+    """Record a failed login attempt for the given IP address."""
+    now = time.time()
+    failed_count, first_failed_time = _LOGIN_ATTEMPTS.get(client_ip, (0, now))
+    if now - first_failed_time > LOGIN_LOCKOUT_WINDOW_SECONDS:
+        failed_count = 1
+        first_failed_time = now
+    else:
+        failed_count += 1
+    _LOGIN_ATTEMPTS[client_ip] = (failed_count, first_failed_time)
+    logger.info(f"Failed login attempt {failed_count}/{LOGIN_MAX_FAILED_ATTEMPTS} recorded for IP {client_ip}.")
+
+
+def reset_login_rate_limit(client_ip: str) -> None:
+    """Reset the failed attempt counter for the given IP upon successful authentication."""
+    if client_ip in _LOGIN_ATTEMPTS:
+        _LOGIN_ATTEMPTS.pop(client_ip, None)
+        logger.info(f"✅ Login rate limit counter reset for IP {client_ip} following successful authentication.")
+
+

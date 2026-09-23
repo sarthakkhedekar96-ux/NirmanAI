@@ -110,10 +110,10 @@ def run_tests():
             ("DB-031", "SELECT COUNT(*) FROM project_observations WHERE cumulative_expenditure < 0;", "Zero Negative Cumulative Expenditure"),
             ("DB-032", "SELECT COUNT(*) FROM project_observations WHERE physical_progress < 0;", "Zero Physical Progress < 0%"),
             ("DB-033", "SELECT COUNT(*) FROM project_observations WHERE physical_progress > 100;", "Zero Physical Progress > 100%"),
-            ("DB-034", "SELECT COUNT(*) FROM risk_scores WHERE predicted_severe_risk_prob < 0;", "Zero Risk Probability < 0.0"),
-            ("DB-035", "SELECT COUNT(*) FROM risk_scores WHERE predicted_severe_risk_prob > 1.0;", "Zero Risk Probability > 1.0"),
-            ("DB-036", "SELECT COUNT(*) FROM risk_scores WHERE risk_score < 0;", "Zero Risk Score < 0"),
-            ("DB-037", "SELECT COUNT(*) FROM risk_scores WHERE risk_score > 100;", "Zero Risk Score > 100")
+            ("DB-034", "SELECT COUNT(*) FROM risk_scores WHERE (composite_risk_score / 100.0) < 0;", "Zero Risk Probability < 0.0"),
+            ("DB-035", "SELECT COUNT(*) FROM risk_scores WHERE (composite_risk_score / 100.0) > 1.0;", "Zero Risk Probability > 1.0"),
+            ("DB-036", "SELECT COUNT(*) FROM risk_scores WHERE composite_risk_score < 0;", "Zero Risk Score < 0"),
+            ("DB-037", "SELECT COUNT(*) FROM risk_scores WHERE composite_risk_score > 100;", "Zero Risk Score > 100")
         ]
 
         for t_id, sql, desc in num_checks:

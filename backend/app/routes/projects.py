@@ -1,11 +1,12 @@
 from typing import List, Optional
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends
 from backend.app.schemas.project import ProjectSummary, ProjectDetail, ProjectPaginatedResponse
 from backend.app.schemas.analytics import ProjectComparisonItem
 from backend.app.services.project_service import list_projects_summary, get_project_details
 from backend.app.services.query_service import search_projects, filter_projects, compare_projects, query_projects
+from backend.app.core.auth_dependencies import get_current_user
 
-router = APIRouter(prefix="/api/projects", tags=["Projects"])
+router = APIRouter(prefix="/api/projects", tags=["Projects"], dependencies=[Depends(get_current_user)])
 
 
 

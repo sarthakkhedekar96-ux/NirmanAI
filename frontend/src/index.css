@@ -4,8 +4,65 @@
 
 @layer base {
   body {
-    @apply bg-gov-grayBg text-gov-navy antialiased;
+    @apply bg-slate-50 text-slate-900 antialiased;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer components {
+  /* Enterprise Component Classes */
+  .enterprise-card {
+    @apply bg-white border border-slate-200 rounded-lg shadow-xs p-5 transition-all;
+  }
+  
+  .enterprise-card-header {
+    @apply flex items-center justify-between pb-3 mb-4 border-b border-slate-100;
+  }
+
+  .enterprise-title {
+    @apply text-base font-semibold text-slate-900 tracking-tight;
+  }
+
+  .enterprise-subtitle {
+    @apply text-xs text-slate-500 font-normal mt-0.5;
+  }
+
+  /* Semantic Risk Badges */
+  .badge-risk-low {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200;
+  }
+
+  .badge-risk-moderate {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200;
+  }
+
+  .badge-risk-high {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-orange-50 text-orange-800 border border-orange-200;
+  }
+
+  .badge-risk-critical {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-red-50 text-red-800 border border-red-200;
+  }
+
+  .badge-unavailable {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200;
+  }
+
+  /* Standard Table Styling */
+  .enterprise-table {
+    @apply w-full text-left text-xs border-collapse;
+  }
+
+  .enterprise-table th {
+    @apply bg-slate-50 text-slate-700 font-semibold px-4 py-3 border-b border-slate-200 uppercase tracking-wider text-[10px];
+  }
+
+  .enterprise-table td {
+    @apply px-4 py-3 border-b border-slate-100 text-slate-800 align-middle;
+  }
+
+  .enterprise-table tr:hover {
+    @apply bg-slate-50/80;
   }
 }
 
@@ -24,3 +81,49 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+@layer utilities {
+  .shadow-xs {
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  }
+  .backdrop-blur-xs {
+    backdrop-filter: blur(2px);
+  }
+}
+
+/* Institutional Report Print Stylesheet */
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  header,
+  nav,
+  aside,
+  footer,
+  .no-print,
+  button,
+  form,
+  .fixed,
+  [role="navigation"] {
+    display: none !important;
+  }
+
+  .print-report-container {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 1.5rem !important;
+  }
+
+  .print-break-inside-avoid {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+}
+
