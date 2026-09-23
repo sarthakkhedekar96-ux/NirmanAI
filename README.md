@@ -340,8 +340,9 @@ flowchart TD
     G --> G4["Stress-Test / What-If"]
 
     G --> H["Nirman AI Copilot"]
-🛠️ Technology Stack
+```
 
+## 🛠️ Technology Stack
 Layer
 
 Technologies
@@ -496,6 +497,8 @@ VITE_API_BASE_URL=/api
 
 ## 🌐 Production Deployment
 
+Target architecture:
+
 ```mermaid
 flowchart LR
     A["User"] --> B["Vercel<br/>React Frontend"]
@@ -507,22 +510,29 @@ flowchart LR
     C --> E["Google Gemini"]
     C --> F["Open-Meteo"]
     C --> G["Sentinel-2 / STAC"]
+```
 
-Backend start command:
+### Backend start command
 
+```bash
 python -m uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT
+```
 
-Required production variables include:
+### Required production variables
 
+```env
 DATABASE_URL=...
 JWT_SECRET_KEY=...
 CORS_ORIGINS=...
+```
 
-Frontend production configuration:
+### Frontend production configuration
 
+```env
 VITE_API_BASE_URL=https://<backend-domain>/api
+```
 
-RAG functionality requires the production document_chunks table to be populated.
+RAG functionality requires the production `document_chunks` table to be populated.
 
 🧪 Testing & Verification
 
