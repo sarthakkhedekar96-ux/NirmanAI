@@ -78,6 +78,7 @@ frontend/dist/
 
 # Local SQLite database
 database/*.db
+backend/app/*.db
 
 # Python tooling/cache
 .mypy_cache/
