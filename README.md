@@ -314,26 +314,32 @@ Project-specific monitoring actions
 
 Recommendations can include trigger conditions and rationale.
 
-🏗️ System Architecture
+## 🏗️ System Architecture
 
-React + TypeScript + Vite
-          │
-          ▼
-      FastAPI API
-          │
-   ┌──────┼────────┬────────────┐
-   ▼      ▼        ▼            ▼
-PostgreSQL ML/Risk  RAG       External Data
-           │        │       Weather/Satellite
-           └────┬───┘
-                ▼
-      Intelligence Services
-  Environment / Dependencies /
-  Satellite / Stress Testing
-                │
-                ▼
-          Gemini Copilot
+```mermaid
+flowchart TD
+    A["React + TypeScript + Vite"] --> B["FastAPI API"]
 
+    B --> C["PostgreSQL"]
+    B --> D["ML / Risk Engine"]
+    B --> E["Hybrid RAG"]
+    B --> F["External Data"]
+
+    F --> F1["Open-Meteo"]
+    F --> F2["Sentinel-2 / STAC"]
+    F --> F3["Google Gemini"]
+
+    C --> G["Intelligence Services"]
+    D --> G
+    E --> G
+    F --> G
+
+    G --> G1["Environmental Intelligence"]
+    G --> G2["Dependency Intelligence"]
+    G --> G3["Satellite Change Detection"]
+    G --> G4["Stress-Test / What-If"]
+
+    G --> H["Nirman AI Copilot"]
 🛠️ Technology Stack
 
 Layer
@@ -488,19 +494,19 @@ Configure the API base with:
 
 VITE_API_BASE_URL=/api
 
-🌐 Production Deployment
+## 🌐 Production Deployment
 
-Target architecture:
+```mermaid
+flowchart LR
+    A["User"] --> B["Vercel<br/>React Frontend"]
 
-Vercel React Frontend
-        │ HTTPS
-        ▼
-Render FastAPI Backend
-        │
-   ┌────┴────┐
-   ▼         ▼
-Managed DB  External APIs
-PostgreSQL  Gemini / Weather / Satellite
+    B -->|"HTTPS / API"| C["Render<br/>FastAPI Backend"]
+
+    C --> D["Managed<br/>PostgreSQL"]
+
+    C --> E["Google Gemini"]
+    C --> F["Open-Meteo"]
+    C --> G["Sentinel-2 / STAC"]
 
 Backend start command:
 
