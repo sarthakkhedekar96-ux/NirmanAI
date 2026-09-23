@@ -8,7 +8,156 @@ from backend.app.core.security import hash_password
 logger = logging.getLogger("nirman.db_init")
 
 
+def ensure_master_tables_exist():
+    """
+    Safely creates `projects`, `project_observations`, `project_features`, and `risk_scores`
+    master tables additively using CREATE TABLE IF NOT EXISTS without touching existing data.
+    """
+    engine = get_resilient_db_engine()
+    is_sqlite = engine.dialect.name == "sqlite"
+
+    if is_sqlite:
+        create_tables_sql = """
+        CREATE TABLE IF NOT EXISTS projects (
+            project_code VARCHAR(32) PRIMARY KEY,
+            project_name TEXT NOT NULL,
+            agency VARCHAR(128),
+            state VARCHAR(128),
+            sector VARCHAR(128),
+            approval_date VARCHAR(7),
+            original_cost NUMERIC(14, 2),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS project_observations (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            project_code VARCHAR(32) REFERENCES projects(project_code) ON DELETE CASCADE,
+            reporting_month VARCHAR(7) NOT NULL,
+            revised_cost NUMERIC(14, 2),
+            anticipated_cost NUMERIC(14, 2),
+            cumulative_expenditure NUMERIC(14, 2),
+            physical_progress NUMERIC(8, 2),
+            original_doc VARCHAR(7),
+            revised_doc VARCHAR(7),
+            anticipated_doc VARCHAR(7),
+            original_delay_months NUMERIC(10, 1),
+            revised_delay_months NUMERIC(10, 1),
+            milestones_achieved INTEGER,
+            milestones_total INTEGER,
+            source_file VARCHAR(128),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT unique_project_reporting_month UNIQUE (project_code, reporting_month)
+        );
+
+        CREATE TABLE IF NOT EXISTS project_features (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            project_code VARCHAR(32) REFERENCES projects(project_code) ON DELETE CASCADE,
+            reporting_month VARCHAR(7) NOT NULL,
+            months_elapsed NUMERIC(14, 2),
+            months_originally_planned NUMERIC(14, 2),
+            months_remaining NUMERIC(14, 2),
+            cost_expansion_ratio NUMERIC(14, 4),
+            expenditure_ratio NUMERIC(14, 4),
+            expenditure_progress_gap NUMERIC(14, 4),
+            schedule_slippage_ratio NUMERIC(14, 4),
+            progress_velocity NUMERIC(14, 4),
+            target_cost_overrun_12m SMALLINT,
+            target_time_overrun_12m SMALLINT,
+            target_severe_risk_12m SMALLINT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT unique_feature_project_reporting_month UNIQUE (project_code, reporting_month)
+        );
+
+        CREATE TABLE IF NOT EXISTS risk_scores (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            project_code VARCHAR(32) REFERENCES projects(project_code) ON DELETE CASCADE,
+            reporting_month VARCHAR(7) NOT NULL,
+            composite_risk_score NUMERIC(5, 2) NOT NULL,
+            cost_risk_score NUMERIC(5, 2),
+            schedule_risk_score NUMERIC(5, 2),
+            progress_risk_score NUMERIC(5, 2),
+            risk_category VARCHAR(32) NOT NULL,
+            shap_top_drivers JSONB,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT unique_risk_project_reporting_month UNIQUE (project_code, reporting_month)
+        );
+        """
+    else:
+        create_tables_sql = """
+        CREATE TABLE IF NOT EXISTS projects (
+            project_code VARCHAR(32) PRIMARY KEY,
+            project_name TEXT NOT NULL,
+            agency VARCHAR(128),
+            state VARCHAR(128),
+            sector VARCHAR(128),
+            approval_date VARCHAR(7),
+            original_cost NUMERIC(14, 2),
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS project_observations (
+            id SERIAL PRIMARY KEY,
+            project_code VARCHAR(32) REFERENCES projects(project_code) ON DELETE CASCADE,
+            reporting_month VARCHAR(7) NOT NULL,
+            revised_cost NUMERIC(14, 2),
+            anticipated_cost NUMERIC(14, 2),
+            cumulative_expenditure NUMERIC(14, 2),
+            physical_progress NUMERIC(8, 2),
+            original_doc VARCHAR(7),
+            revised_doc VARCHAR(7),
+            anticipated_doc VARCHAR(7),
+            original_delay_months NUMERIC(10, 1),
+            revised_delay_months NUMERIC(10, 1),
+            milestones_achieved INTEGER,
+            milestones_total INTEGER,
+            source_file VARCHAR(128),
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT unique_project_reporting_month UNIQUE (project_code, reporting_month)
+        );
+
+        CREATE TABLE IF NOT EXISTS project_features (
+            id SERIAL PRIMARY KEY,
+            project_code VARCHAR(32) REFERENCES projects(project_code) ON DELETE CASCADE,
+            reporting_month VARCHAR(7) NOT NULL,
+            months_elapsed NUMERIC(14, 2),
+            months_originally_planned NUMERIC(14, 2),
+            months_remaining NUMERIC(14, 2),
+            cost_expansion_ratio NUMERIC(14, 4),
+            expenditure_ratio NUMERIC(14, 4),
+            expenditure_progress_gap NUMERIC(14, 4),
+            schedule_slippage_ratio NUMERIC(14, 4),
+            progress_velocity NUMERIC(14, 4),
+            target_cost_overrun_12m SMALLINT,
+            target_time_overrun_12m SMALLINT,
+            target_severe_risk_12m SMALLINT,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT unique_feature_project_reporting_month UNIQUE (project_code, reporting_month)
+        );
+
+        CREATE TABLE IF NOT EXISTS risk_scores (
+            id SERIAL PRIMARY KEY,
+            project_code VARCHAR(32) REFERENCES projects(project_code) ON DELETE CASCADE,
+            reporting_month VARCHAR(7) NOT NULL,
+            composite_risk_score NUMERIC(5, 2) NOT NULL,
+            cost_risk_score NUMERIC(5, 2),
+            schedule_risk_score NUMERIC(5, 2),
+            progress_risk_score NUMERIC(5, 2),
+            risk_category VARCHAR(32) NOT NULL,
+            shap_top_drivers JSONB,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            CONSTRAINT unique_risk_project_reporting_month UNIQUE (project_code, reporting_month)
+        );
+        """
+    try:
+        with engine.begin() as conn:
+            conn.execute(sqlalchemy.text(create_tables_sql))
+        logger.info("✅ Database master tables (projects, project_observations, project_features, risk_scores) verified/initialized additively.")
+    except Exception as e:
+        logger.error(f"Error ensuring master tables: {e}")
+
+
 def ensure_users_table_exists():
+
     """
     Safely creates the `users` table additively without touching or resetting existing database tables.
     """

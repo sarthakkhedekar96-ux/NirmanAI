@@ -14,6 +14,9 @@ from sqlalchemy import create_engine, text
 
 # Base Directory Setup
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
+
 SCHEMA_FILE = BASE_DIR / "database" / "schema.sql"
 
 # Load .env file manually

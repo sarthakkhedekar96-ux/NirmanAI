@@ -13,7 +13,7 @@ from backend.app.middleware.error_handler import (
 )
 
 from backend.app.routes import health, projects, risk, analytics, documents, assistant, risk_intelligence, auth, notifications, environment, dependencies, stress_test, satellite
-from backend.app.core.db_init import ensure_users_table_exists, seed_bootstrap_admin_if_needed, ensure_notification_tables_exist, ensure_project_indexes_exist, ensure_environmental_tables_exist, ensure_dependency_tables_exist
+from backend.app.core.db_init import ensure_master_tables_exist, ensure_users_table_exists, seed_bootstrap_admin_if_needed, ensure_notification_tables_exist, ensure_project_indexes_exist, ensure_environmental_tables_exist, ensure_dependency_tables_exist
 
 # Initialize Structured Logging
 setup_logging()
@@ -83,6 +83,7 @@ from backend.app.services.cache_service import cache_service
 def on_startup():
     logger.info("CORS allowed origins:\n%s", cors_origins)
     cache_service.clear()
+    ensure_master_tables_exist()
     ensure_users_table_exists()
     seed_bootstrap_admin_if_needed()
     ensure_notification_tables_exist()
