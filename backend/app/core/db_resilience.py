@@ -16,7 +16,7 @@ from typing import Callable, Any
 from fastapi import HTTPException
 import sqlalchemy
 from sqlalchemy.exc import OperationalError, DBAPIError
-from backend.app.config import DATABASE_URL, FALLBACK_SQLITE_PATH
+from backend.app.config import DATABASE_URL, FALLBACK_SQLITE_PATH, HAS_EXPLICIT_DB_URL, mask_database_url
 
 logger = logging.getLogger("nirman.db")
 
@@ -28,25 +28,34 @@ def get_resilient_db_engine() -> sqlalchemy.Engine:
     """Return singleton SQLAlchemy engine with optimized connection pooling."""
     global _engine
     if _engine is None:
-        try:
-            _engine = sqlalchemy.create_engine(
-                DATABASE_URL,
-                pool_size=10,
-                max_overflow=20,
-                pool_timeout=10,
-                pool_recycle=1800,
-                pool_pre_ping=True  # Automatic pre-ping check before issuing queries
-            )
-        except Exception as e:
-            logger.warning(f"Primary PostgreSQL engine creation failed: {e}. Defaulting to SQLite fallback.")
+        if HAS_EXPLICIT_DB_URL and DATABASE_URL:
+            try:
+                _engine = sqlalchemy.create_engine(
+                    DATABASE_URL,
+                    pool_size=10,
+                    max_overflow=20,
+                    pool_timeout=10,
+                    pool_recycle=1800,
+                    pool_pre_ping=True  # Automatic pre-ping check before issuing queries
+                )
+                with _engine.connect() as conn:
+                    conn.execute(sqlalchemy.text("SELECT 1"))
+                logger.info(f"✅ Successfully connected to PostgreSQL database at {mask_database_url(DATABASE_URL)}")
+            except Exception as e:
+                masked_url = mask_database_url(DATABASE_URL)
+                logger.critical(f"Primary PostgreSQL engine creation failed for {masked_url}: {e}", exc_info=True)
+                # When DATABASE_URL is explicitly configured, DO NOT silently fall back to SQLite
+                raise RuntimeError(f"Failed to connect to configured PostgreSQL database ({masked_url}): {e}") from e
+        else:
+            logger.warning(f"No DATABASE_URL configured. Defaulting to SQLite fallback at {FALLBACK_SQLITE_PATH}.")
             _engine = sqlalchemy.create_engine(f"sqlite:///{FALLBACK_SQLITE_PATH}", pool_pre_ping=True)
     return _engine
 
 
 def check_db_health(engine: sqlalchemy.Engine | None = None) -> bool:
     """Perform a fast ping query to verify database vitality."""
-    eng = engine or get_resilient_db_engine()
     try:
+        eng = engine or get_resilient_db_engine()
         with eng.connect() as conn:
             conn.execute(sqlalchemy.text("SELECT 1"))
         return True

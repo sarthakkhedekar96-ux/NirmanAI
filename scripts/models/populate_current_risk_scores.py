@@ -72,6 +72,8 @@ def get_database_url():
     database_url = __import__("os").getenv("DATABASE_URL")
 
     if database_url:
+        if str(database_url).startswith("postgres://"):
+            database_url = "postgresql://" + str(database_url)[len("postgres://"):]
         return database_url
 
     return URL.create(

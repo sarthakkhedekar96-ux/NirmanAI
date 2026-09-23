@@ -17,7 +17,36 @@ if _env_file.exists():
             if _key and _key not in os.environ:  # don't override existing shell env vars
                 os.environ[_key] = _val
 
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgresql://postgres@localhost:5432/nirman_db"
-)
+def normalize_database_url(url: str | None) -> str:
+    """
+    Centralized, safe normalization of PostgreSQL database URLs.
+    If url starts with 'postgres://', normalizes prefix to 'postgresql://'.
+    Preserves username, password, hostname, port, database name, and query parameters.
+    """
+    if not url:
+        return ""
+    url_str = str(url).strip()
+    if url_str.startswith("postgres://"):
+        return "postgresql://" + url_str[len("postgres://"):]
+    return url_str
+
+
+def mask_database_url(url: str | None) -> str:
+    """Mask password in connection URL for safe logging."""
+    if not url:
+        return ""
+    try:
+        from urllib.parse import urlparse, urlunparse
+        parsed = urlparse(url)
+        if parsed.password:
+            netloc = parsed.netloc.replace(f":{parsed.password}@", ":***@")
+            parsed = parsed._replace(netloc=netloc)
+            return urlunparse(parsed)
+    except Exception:
+        pass
+    return str(url)
+
+
+RAW_DATABASE_URL = os.getenv("DATABASE_URL")
+HAS_EXPLICIT_DB_URL = bool(RAW_DATABASE_URL and RAW_DATABASE_URL.strip())
+DATABASE_URL = normalize_database_url(RAW_DATABASE_URL) if HAS_EXPLICIT_DB_URL else ""
