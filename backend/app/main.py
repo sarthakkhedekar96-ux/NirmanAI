@@ -24,23 +24,29 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Configure & Register CORS Middleware
+cors_origins_env = os.getenv("CORS_ORIGINS")
+if cors_origins_env and cors_origins_env.strip():
+    raw_origins = cors_origins_env.split(",")
+else:
+    raw_origins = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000"
+    ]
+
+cors_origins = []
+for origin in raw_origins:
+    cleaned = origin.strip().rstrip("/")
+    if cleaned and cleaned not in cors_origins:
+        cors_origins.append(cleaned)
+
 # Register Security & Rate Limiting Middleware
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(RateLimitingMiddleware)
-default_origins = [
-    "http://localhost:5173",
-    "http://localhost:3000",
-    "http://localhost:8000",
-    "http://127.0.0.1:5173",
-    "http://127.0.0.1:8000"
-]
-cors_origins_env = os.getenv("CORS_ORIGINS")
-if cors_origins_env:
-    extra_origins = [origin.strip() for origin in cors_origins_env.split(",") if origin.strip()]
-    cors_origins = list(dict.fromkeys(default_origins + extra_origins))
-else:
-    cors_origins = default_origins
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
@@ -75,6 +81,7 @@ from backend.app.services.cache_service import cache_service
 # Startup Hook: Verify Database Vitality & Initialize Cache
 @app.on_event("startup")
 def on_startup():
+    logger.info("CORS allowed origins:\n%s", cors_origins)
     cache_service.clear()
     ensure_users_table_exists()
     seed_bootstrap_admin_if_needed()
