@@ -9,9 +9,25 @@ from backend.app.services.embedding_service import EmbeddingService
 from backend.app.schemas.document import DocumentChunkResponse, SearchResponse
 
 
+_embedding_service_instance: Optional[EmbeddingService] = None
+_retrieval_service_instance: Optional["RetrievalService"] = None
+
+def get_embedding_service() -> EmbeddingService:
+    global _embedding_service_instance
+    if _embedding_service_instance is None:
+        _embedding_service_instance = EmbeddingService()
+    return _embedding_service_instance
+
+def get_retrieval_service() -> "RetrievalService":
+    global _retrieval_service_instance
+    if _retrieval_service_instance is None:
+        _retrieval_service_instance = RetrievalService(embedder=get_embedding_service())
+    return _retrieval_service_instance
+
+
 class RetrievalService:
     def __init__(self, embedder: Optional[EmbeddingService] = None):
-        self.embedder = embedder or EmbeddingService()
+        self.embedder = embedder or get_embedding_service()
 
     def _get_connection(self):
         return psycopg2.connect(DATABASE_URL)

@@ -44,8 +44,16 @@ def _gather_state_digest(state_name: str) -> Dict[str, Any]:
 
 def _gather_project_details(project_code: str) -> Dict[str, Any]:
     try:
+        from backend.app.services.cache_service import cache_service
+        cache_key = f"proj_details:{project_code}"
+        cached = cache_service.get(cache_key)
+        if cached:
+            return cached
         from backend.app.services import project_service
-        return project_service.get_project_details(project_code) or {}
+        res = project_service.get_project_details(project_code) or {}
+        if res:
+            cache_service.set(cache_key, res, ttl_seconds=300)
+        return res
     except Exception as e:
         print(f"[Assistant] project_details error for {project_code}: {e}")
         return {}
@@ -53,8 +61,16 @@ def _gather_project_details(project_code: str) -> Dict[str, Any]:
 
 def _gather_top_projects(limit: int = 10) -> List[Dict]:
     try:
+        from backend.app.services.cache_service import cache_service
+        cache_key = f"top_projects:{limit}"
+        cached = cache_service.get(cache_key)
+        if cached:
+            return cached
         from backend.app.services import project_service
-        return project_service.list_projects_summary(limit=limit)
+        res = project_service.list_projects_summary(limit=limit)
+        if res:
+            cache_service.set(cache_key, res, ttl_seconds=300)
+        return res
     except Exception as e:
         print(f"[Assistant] top_projects error: {e}")
         return []
@@ -81,8 +97,8 @@ def _gather_risk_decomposition(project_code: str) -> Dict[str, Any]:
 
 def _gather_rag_evidence(query: str, project_code: Optional[str] = None, top_k: int = 5) -> List[Dict]:
     try:
-        from backend.app.services.retrieval_service import RetrievalService
-        svc = RetrievalService()
+        from backend.app.services.retrieval_service import get_retrieval_service
+        svc = get_retrieval_service()
         result = svc.search(query=query, project_code=project_code, top_k=top_k)
         chunks = getattr(result, "retrieved_chunks", getattr(result, "results", []))
         return [
@@ -112,10 +128,18 @@ def _gather_early_warnings() -> Dict[str, Any]:
 
 def _gather_environmental_report(project_code: str) -> Dict[str, Any]:
     try:
+        from backend.app.services.cache_service import cache_service
+        cache_key = f"env_report:{project_code}"
+        cached = cache_service.get(cache_key)
+        if cached:
+            return cached
         from backend.app.services.environmental_service import EnvironmentalService
         from backend.app.services import project_service
         proj = project_service.get_project_details(project_code) or {"project_code": project_code}
-        return EnvironmentalService.get_project_environmental_report(proj)
+        res = EnvironmentalService.get_project_environmental_report(proj) or {}
+        if res:
+            cache_service.set(cache_key, res, ttl_seconds=600)
+        return res
     except Exception as e:
         print(f"[Assistant] environmental_report error for {project_code}: {e}")
         return {}
