@@ -10,13 +10,27 @@ export default {
         gov: {
           navy: '#0f172a',       // Slate 900
           navyLight: '#1e293b',  // Slate 800
-          blue: '#1d4ed8',       // Blue 700
-          blueLight: '#eff6ff',  // Blue 50
-          amber: '#d97706',      // Amber 600 (Saffron subtle accent)
+          blue: '#0284c7',       // Sky 600
+          cyan: '#06b6d4',       // Cyan 500
+          blueLight: '#f0f9ff',  // Sky 50
+          amber: '#d97706',      // Amber 600
           saffron: '#ea580c',    // Orange 600
           grayBg: '#f8fafc',     // Slate 50 background
           cardBg: '#ffffff',
-          border: '#e2e8f0',
+          border: '#cff4fc',     // Light cyan border
+        },
+        cyanBrand: {
+          50: '#ecfeff',
+          100: '#cff4fc',
+          200: '#a5f3fc',
+          300: '#67e8f9',
+          400: '#22d3ee',
+          500: '#06b6d4',
+          600: '#0891b2',
+          700: '#0e7490',
+          800: '#155e75',
+          900: '#164e63',
+          950: '#083344',
         },
         risk: {
           normalBg: '#ecfdf5',

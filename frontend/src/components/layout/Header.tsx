@@ -73,17 +73,17 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="bg-gov-navy text-white border-b border-slate-700 shadow-sm sticky top-0 z-30">
+    <header className="bg-white/95 text-slate-900 border-b border-cyan-100/90 shadow-xs sticky top-0 z-30 backdrop-blur-md">
       {/* Top Govt Bar */}
-      <div className="bg-slate-950 text-slate-400 text-xs py-1 px-4 flex justify-between items-center border-b border-slate-800">
+      <div className="bg-gradient-to-r from-cyan-950 via-slate-900 to-cyan-900 text-cyan-100 text-xs py-1 px-4 flex justify-between items-center border-b border-cyan-800/40">
         <div className="flex items-center gap-2 font-medium">
-          <span className="inline-block w-2.5 h-2.5 rounded-full bg-gov-amber"></span>
+          <span className="inline-block w-2.5 h-2.5 rounded-full bg-amber-400"></span>
           <span className="hidden sm:inline">GOVERNMENT OF INDIA — </span>
           <span>MINISTRY OF STATISTICS & PROGRAMME IMPLEMENTATION</span>
         </div>
-        <div className="flex items-center gap-4 text-slate-300">
+        <div className="flex items-center gap-4 text-cyan-200">
           <span className="hidden md:flex items-center gap-1 text-xs">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
             Official Monitoring Portal
           </span>
           {health ? (
@@ -106,7 +106,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="flex items-center gap-3">
           <button
             onClick={onToggleSidebar}
-            className="p-1.5 rounded-md text-slate-300 hover:text-white hover:bg-slate-800 transition focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="p-1.5 rounded-lg text-slate-600 hover:text-cyan-900 hover:bg-cyan-50 transition focus:outline-none focus:ring-2 focus:ring-cyan-500 cursor-pointer"
             aria-label={isSidebarOpen ? "Close navigation menu" : "Open navigation menu"}
             title={isSidebarOpen ? "Close navigation menu" : "Open navigation menu"}
           >
@@ -114,7 +114,7 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
 
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => onSelectProject('')}>
-            <div className="bg-white p-1 rounded-md border border-slate-200/80 shadow-2xs shrink-0 flex items-center justify-center h-10 w-auto">
+            <div className="bg-white p-1 rounded-md border border-cyan-200/80 shadow-2xs shrink-0 flex items-center justify-center h-10 w-auto">
               <img 
                 src="/nirman-logo.jpeg" 
                 alt="Nirman AI Logo" 
@@ -123,14 +123,14 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-base font-bold tracking-tight text-white leading-none">
+                <h1 className="text-base font-extrabold tracking-tight bg-gradient-to-r from-cyan-600 via-sky-600 to-blue-700 bg-clip-text text-transparent leading-none">
                   NIRMAN AI
                 </h1>
-                <span className="bg-slate-800 text-slate-300 border border-slate-700 text-[9px] font-semibold px-1.5 py-0.5 rounded tracking-wide uppercase">
+                <span className="bg-cyan-50 text-cyan-800 border border-cyan-200 text-[9px] font-semibold px-1.5 py-0.5 rounded tracking-wide uppercase">
                   InfraPredict v1.0
                 </span>
               </div>
-              <p className="text-[11px] text-slate-300 font-normal hidden sm:block">
+              <p className="text-[11px] text-slate-500 font-normal hidden sm:block">
                 Infrastructure Risk Intelligence & Decision Support
               </p>
             </div>
@@ -145,12 +145,12 @@ export const Header: React.FC<HeaderProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Quick Jump by Project Code or Name (e.g. 020100044)..."
-              className="w-full bg-slate-800/90 text-white placeholder-slate-400 text-xs rounded-md pl-9 pr-16 py-1.5 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+              className="w-full bg-slate-50 text-slate-900 placeholder-slate-400 text-xs rounded-lg pl-9 pr-16 py-1.5 border border-cyan-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 focus:bg-white transition"
             />
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+            <Search className="w-3.5 h-3.5 text-cyan-600 absolute left-3 top-2.5" />
             <button
               type="submit"
-              className="absolute right-1 top-1 bottom-1 px-2.5 bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-medium rounded transition flex items-center gap-1"
+              className="absolute right-1 top-1 bottom-1 px-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white text-[11px] font-medium rounded-md transition flex items-center gap-1 shadow-2xs cursor-pointer"
             >
               Inspect
             </button>
@@ -160,20 +160,20 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Right: Active Context, Notifications, Copilot & User Profile */}
         <div className="flex items-center gap-2.5">
           {activeProjectCode && (
-            <div className="hidden xl:flex items-center gap-2 bg-blue-950/80 border border-blue-700/50 px-2.5 py-1 rounded-md text-xs">
-              <span className="text-slate-400 text-[11px]">Context:</span>
-              <span className="font-mono text-blue-300 font-semibold text-xs">{activeProjectCode}</span>
+            <div className="hidden xl:flex items-center gap-2 bg-cyan-50 border border-cyan-200 px-2.5 py-1 rounded-md text-xs">
+              <span className="text-slate-500 text-[11px]">Context:</span>
+              <span className="font-mono text-cyan-800 font-semibold text-xs">{activeProjectCode}</span>
             </div>
           )}
 
-          {/* Phase 8: Notification Bell & Popover */}
+          {/* Notification Bell & Popover */}
           <div className="relative">
             <button
               onClick={() => setIsNotifOpen(!isNotifOpen)}
-              className="p-1.5 relative rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
+              className="p-1.5 relative rounded-lg bg-slate-50 hover:bg-cyan-50 text-slate-700 border border-cyan-200 transition cursor-pointer"
               title="Risk Alerts & Notifications"
             >
-              <Bell className="w-4 h-4 text-amber-400" />
+              <Bell className="w-4 h-4 text-cyan-600" />
               {unreadCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-red-600 text-white font-bold text-[10px] w-4 h-4 rounded-full flex items-center justify-center shadow animate-pulse">
                   {unreadCount > 9 ? '9+' : unreadCount}
@@ -183,13 +183,13 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* Notification Drawer Popover */}
             {isNotifOpen && (
-              <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-50 text-slate-200 overflow-hidden animate-in fade-in slide-in-from-top-2">
-                <div className="p-3 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+              <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-cyan-100 rounded-xl shadow-2xl z-50 text-slate-900 overflow-hidden animate-in fade-in slide-in-from-top-2">
+                <div className="p-3 bg-gradient-to-r from-cyan-600 to-blue-700 text-white flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Bell className="w-4 h-4 text-amber-400" />
+                    <Bell className="w-4 h-4 text-amber-300" />
                     <span className="font-bold text-xs text-white">Alert Notifications</span>
                     {unreadCount > 0 && (
-                      <span className="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-mono px-1.5 py-0.5 rounded">
+                      <span className="bg-white/20 text-white border border-white/30 text-[10px] font-mono px-1.5 py-0.5 rounded">
                         {unreadCount} unread
                       </span>
                     )}
@@ -198,38 +198,38 @@ export const Header: React.FC<HeaderProps> = ({
                     {unreadCount > 0 && (
                       <button
                         onClick={handleMarkAllRead}
-                        className="text-[11px] text-blue-400 hover:text-blue-300 flex items-center gap-1 font-medium transition"
+                        className="text-[11px] text-cyan-100 hover:text-white flex items-center gap-1 font-medium transition"
                       >
                         <CheckCheck className="w-3.5 h-3.5" />
                         Mark all read
                       </button>
                     )}
-                    <button onClick={() => setIsNotifOpen(false)} className="text-slate-400 hover:text-white">
+                    <button onClick={() => setIsNotifOpen(false)} className="text-cyan-100 hover:text-white">
                       <X className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
 
-                <div className="max-h-80 overflow-y-auto divide-y divide-slate-800/60 scrollbar-thin">
+                <div className="max-h-80 overflow-y-auto divide-y divide-cyan-50 scrollbar-thin">
                   {notifications.length === 0 ? (
-                    <div className="p-6 text-center text-slate-400 text-xs">
+                    <div className="p-6 text-center text-slate-500 text-xs">
                       No notifications recorded.
                     </div>
                   ) : (
                     notifications.map(n => (
                       <div
                         key={n.id}
-                        className={`p-3 text-xs transition hover:bg-slate-800/50 ${
-                          n.status === 'UNREAD' ? 'bg-slate-850 border-l-2 border-amber-500' : 'opacity-75'
+                        className={`p-3 text-xs transition hover:bg-cyan-50/50 ${
+                          n.status === 'UNREAD' ? 'bg-cyan-50/30 border-l-2 border-amber-500' : 'opacity-75'
                         }`}
                       >
                         <div className="flex items-start justify-between gap-2 mb-1">
                           <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${
                             n.severity === 'CRITICAL'
-                              ? 'bg-red-950 text-red-300 border border-red-800'
+                              ? 'bg-red-50 text-red-700 border border-red-200'
                               : n.severity === 'HIGH'
-                              ? 'bg-amber-950 text-amber-300 border border-amber-800'
-                              : 'bg-blue-950 text-blue-300 border border-blue-800'
+                              ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                              : 'bg-cyan-50 text-cyan-800 border border-cyan-200'
                           }`}>
                             {n.severity}
                           </span>
@@ -238,18 +238,18 @@ export const Header: React.FC<HeaderProps> = ({
                           </span>
                         </div>
 
-                        <div className="font-semibold text-white text-xs mb-0.5">{n.title}</div>
-                        <p className="text-slate-300 text-[11px] leading-relaxed line-clamp-2 mb-2">
+                        <div className="font-semibold text-slate-900 text-xs mb-0.5">{n.title}</div>
+                        <p className="text-slate-600 text-[11px] leading-relaxed line-clamp-2 mb-2">
                           {n.message}
                         </p>
 
-                        <div className="flex items-center justify-between pt-1 border-t border-slate-800/40">
+                        <div className="flex items-center justify-between pt-1 border-t border-cyan-50">
                           <button
                             onClick={() => {
                               onSelectProject(n.project_code);
                               setIsNotifOpen(false);
                             }}
-                            className="text-blue-400 hover:text-blue-300 font-medium text-[11px] flex items-center gap-1"
+                            className="text-cyan-700 hover:text-cyan-900 font-medium text-[11px] flex items-center gap-1 cursor-pointer"
                           >
                             <ExternalLink className="w-3 h-3" />
                             Inspect {n.project_code}
@@ -258,7 +258,7 @@ export const Header: React.FC<HeaderProps> = ({
                           {n.status === 'UNREAD' && (
                             <button
                               onClick={() => handleMarkAsRead(n.id)}
-                              className="text-slate-400 hover:text-emerald-400 text-[10px]"
+                              className="text-slate-400 hover:text-emerald-600 text-[10px] cursor-pointer"
                             >
                               Mark read
                             </button>
@@ -274,29 +274,29 @@ export const Header: React.FC<HeaderProps> = ({
 
           <button
             onClick={onToggleAssistant}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition shadow-xs ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition shadow-xs cursor-pointer ${
               isAssistantOpen
-                ? 'bg-blue-600 text-white shadow-blue-500/20'
-                : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'
+                ? 'bg-gradient-to-r from-cyan-600 to-blue-700 text-white shadow-cyan-500/20'
+                : 'bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 text-white hover:from-cyan-600 hover:to-blue-700'
             }`}
           >
-            <Bot className="w-3.5 h-3.5 text-blue-400" />
+            <Bot className="w-3.5 h-3.5 text-white" />
             <span className="hidden sm:inline">Assistant</span>
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
           </button>
 
           {/* User Profile Badge & Logout */}
           {user && (
-            <div className="flex items-center gap-2 pl-2 border-l border-slate-800">
+            <div className="flex items-center gap-2 pl-2 border-l border-cyan-100">
               <div className="hidden lg:flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xs shadow border border-blue-400/40">
+                <div className="w-7 h-7 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold flex items-center justify-center text-xs shadow-2xs">
                   {user.full_name ? user.full_name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() : 'U'}
                 </div>
                 <div className="text-left leading-tight hidden xl:block">
-                  <div className="text-xs font-bold text-slate-100 truncate max-w-[110px]" title={user.full_name}>
+                  <div className="text-xs font-bold text-slate-800 truncate max-w-[110px]" title={user.full_name}>
                     {user.full_name}
                   </div>
-                  <span className="text-[9px] font-mono font-bold text-gov-amber uppercase">
+                  <span className="text-[9px] font-mono font-bold text-cyan-700 uppercase">
                     {user.role}
                   </span>
                 </div>
@@ -304,7 +304,7 @@ export const Header: React.FC<HeaderProps> = ({
 
               <button
                 onClick={logout}
-                className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-md transition"
+                className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition cursor-pointer"
                 title="Sign Out of Session"
               >
                 <LogOut className="w-4 h-4" />
