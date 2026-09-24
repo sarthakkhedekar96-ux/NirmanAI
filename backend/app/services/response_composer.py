@@ -132,16 +132,39 @@ Respond with ONLY valid JSON:
   ]
 }}
 """
-                model_name = os.getenv("GEMINI_MODEL", "gemini-3.6-flash").replace("models/", "")
-                res = client.models.generate_content(
-                    model=f"models/{model_name}",
-                    contents=prompt
-                )
-                text = res.text.strip()
-                match = re.search(r'\{.*\}', text, re.DOTALL)
-                if match:
-                    d = json.loads(match.group(0))
-                    return d.get("direct_answer", ""), d.get("key_findings", []), d.get("next_actions", [])
+                from google.genai import types
+                user_model = os.getenv("GEMINI_MODEL", "gemini-3.6-flash").replace("models/", "").strip('"\'')
+                fallback_model = os.getenv("GEMINI_FALLBACK_MODEL", "gemini-3.5-flash-lite").replace("models/", "").strip('"\'')
+                candidates = [user_model, fallback_model, "gemini-3.6-flash", "gemini-3.5-flash-lite"]
+                seen = set()
+                candidates = [m for m in candidates if m and not (m in seen or seen.add(m))]
+
+                gen_config = None
+                try:
+                    gen_config = types.GenerateContentConfig(
+                        temperature=0.1,
+                        http_options=types.HttpOptions(timeout=15000),
+                        automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True)
+                    )
+                except Exception:
+                    pass
+
+                for m in candidates:
+                    try:
+                        model_name = f"models/{m}" if not m.startswith("models/") else m
+                        call_kwargs = {"model": model_name, "contents": prompt}
+                        if gen_config:
+                            call_kwargs["config"] = gen_config
+                        res = client.models.generate_content(**call_kwargs)
+                        if res and res.text:
+                            text = res.text.strip()
+                            match = re.search(r'\{.*\}', text, re.DOTALL)
+                            if match:
+                                d = json.loads(match.group(0))
+                                return d.get("direct_answer", ""), d.get("key_findings", []), d.get("next_actions", [])
+                    except Exception as err:
+                        print(f"[ResponseComposer] Gemini '{m}' failed ({err}). Trying fallback...")
+                        continue
             except Exception as e:
                 print(f"[ResponseComposer] LLM insight generation failed ({e}). Using deterministic rule generator.")
 

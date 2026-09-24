@@ -27,56 +27,73 @@ class RetrievalService:
         """Perform hybrid retrieval over document_chunks combining pre-filtering, vector search, lexical ranking, and RRF."""
         
         # 1. Fetch Candidate Chunks matching metadata pre-filters
-        where_clauses = []
-        params = []
-
-        if project_code:
-            where_clauses.append("(project_code = %s OR metadata->>'project_codes' LIKE %s)")
-            params.extend([project_code, f"%{project_code}%"])
-        if reporting_month:
-            where_clauses.append("reporting_month = %s")
-            params.append(reporting_month)
-        if document_type:
-            where_clauses.append("document_type = %s")
-            params.append(document_type)
-
-        where_str = (" WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
-        
-        # Limit initial retrieval pool to top candidates for efficient scoring
-        sql = f"""
-            SELECT chunk_id, content, embedding, source_file, relative_path,
-                   page_number, reporting_month, reporting_year, project_code,
-                   document_type, metadata
-            FROM document_chunks
-            {where_str}
-            LIMIT 5000;
-        """
-
+        rows = []
         conn = self._get_connection()
         try:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                cur.execute(sql, params)
-                rows = cur.fetchall()
-
-                # Content fallback pre-filter if project_code was specified but 0 metadata matches found
-                if not rows and project_code:
-                    fallback_clauses = [c for c in where_clauses if "project_code" not in c]
-                    fallback_clauses.append("content LIKE %s")
-                    fallback_params = [p for p in params if p != project_code and p != f"%{project_code}%"]
-                    fallback_params.insert(0, f"%{project_code}%")
-
-                    fallback_where = (" WHERE " + " AND ".join(fallback_clauses)) if fallback_clauses else ""
-                    fallback_sql = f"""
+                if project_code:
+                    # Strategy A: Fast indexed query on exact project_code (<10ms)
+                    sql_exact = """
                         SELECT chunk_id, content, embedding, source_file, relative_path,
                                page_number, reporting_month, reporting_year, project_code,
                                document_type, metadata
                         FROM document_chunks
-                        {fallback_where}
-                        LIMIT 5000;
+                        WHERE project_code = %s
+                        ORDER BY reporting_year DESC, reporting_month DESC
+                        LIMIT 150;
                     """
-                    cur.execute(fallback_sql, fallback_params)
+                    cur.execute(sql_exact, [project_code])
                     rows = cur.fetchall()
-        except Exception:
+
+                    # Strategy B: Fallback to metadata JSON lookup if exact project_code produced 0 matches
+                    if not rows:
+                        sql_meta = """
+                            SELECT chunk_id, content, embedding, source_file, relative_path,
+                                   page_number, reporting_month, reporting_year, project_code,
+                                   document_type, metadata
+                            FROM document_chunks
+                            WHERE (project_code = %s OR metadata->>'project_codes' LIKE %s)
+                            LIMIT 200;
+                        """
+                        cur.execute(sql_meta, [project_code, f"%{project_code}%"])
+                        rows = cur.fetchall()
+
+                    # Strategy C: Fallback to content text search if metadata produced 0 matches
+                    if not rows:
+                        sql_content = """
+                            SELECT chunk_id, content, embedding, source_file, relative_path,
+                                   page_number, reporting_month, reporting_year, project_code,
+                                   document_type, metadata
+                            FROM document_chunks
+                            WHERE content LIKE %s
+                            LIMIT 150;
+                        """
+                        cur.execute(sql_content, [f"%{project_code}%"])
+                        rows = cur.fetchall()
+                else:
+                    # Generic query: bounded candidate pool for high performance
+                    where_clauses = []
+                    params = []
+                    if reporting_month:
+                        where_clauses.append("reporting_month = %s")
+                        params.append(reporting_month)
+                    if document_type:
+                        where_clauses.append("document_type = %s")
+                        params.append(document_type)
+
+                    where_str = (" WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
+                    sql_generic = f"""
+                        SELECT chunk_id, content, embedding, source_file, relative_path,
+                               page_number, reporting_month, reporting_year, project_code,
+                               document_type, metadata
+                        FROM document_chunks
+                        {where_str}
+                        LIMIT 250;
+                    """
+                    cur.execute(sql_generic, params)
+                    rows = cur.fetchall()
+        except Exception as err:
+            print(f"[RetrievalService] DB query exception: {err}")
             rows = []
         finally:
             conn.close()

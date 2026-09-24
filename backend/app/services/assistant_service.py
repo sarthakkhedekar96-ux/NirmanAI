@@ -62,9 +62,18 @@ def _gather_top_projects(limit: int = 10) -> List[Dict]:
 
 def _gather_risk_decomposition(project_code: str) -> Dict[str, Any]:
     try:
+        from backend.app.services.cache_service import cache_service
+        cache_key = f"risk_decomp:{project_code}"
+        cached = cache_service.get(cache_key)
+        if cached:
+            return cached
+
         from backend.app.services.risk_decomposition_service import RiskDecompositionService
         svc = RiskDecompositionService()
-        return svc.decompose_project_risk(project_code) or {}
+        res = svc.decompose_project_risk(project_code) or {}
+        if res:
+            cache_service.set(cache_key, res, ttl_seconds=300)
+        return res
     except Exception as e:
         print(f"[Assistant] risk_decomp error for {project_code}: {e}")
         return {}
@@ -124,13 +133,13 @@ def _gather_dependency_graph(project_code: str) -> Dict[str, Any]:
 # ── Intent & Entity Extraction ────────────────────────────────────────────────
 
 
-def _extract_entities(query: str, session: Any) -> Dict[str, Any]:
+def _extract_entities(query: str, session: Any, explicit_project_code: Optional[str] = None) -> Dict[str, Any]:
     """Extract project codes, state names, and key entities from user query."""
     q = query.lower()
 
     # Project code patterns: 220100262, N22000170, 020100044 etc.
     codes = re.findall(r'\b([A-Z]?\d{7,10}|[A-Z]\d{6,9})\b', query.upper())
-    primary_code = codes[0] if codes else session.last_project_code
+    primary_code = explicit_project_code or (codes[0] if codes else session.last_project_code)
 
     states = ["maharashtra", "tamil nadu", "uttar pradesh", "gujarat", "bihar",
               "karnataka", "west bengal", "delhi", "rajasthan", "odisha",
@@ -388,19 +397,35 @@ def _call_gemini(prompt: str) -> Optional[str]:
 
     try:
         from google import genai
+        from google.genai import types
         client = genai.Client(api_key=api_key)
-        for m in candidates:
+        
+        gen_config = None
+        try:
+            gen_config = types.GenerateContentConfig(
+                temperature=0.2,
+                http_options=types.HttpOptions(timeout=20000),
+                automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True)
+            )
+        except Exception:
+            pass
+
+        for idx, m in enumerate(candidates):
             try:
                 model_name = f"models/{m}" if not m.startswith("models/") else m
-                res = client.models.generate_content(
-                    model=model_name,
-                    contents=prompt
-                )
+                call_kwargs = {"model": model_name, "contents": prompt}
+                if gen_config:
+                    call_kwargs["config"] = gen_config
+
+                res = client.models.generate_content(**call_kwargs)
                 if res and res.text:
-                    print(f"[Assistant] Gemini '{m}' responded successfully.")
+                    if idx > 0:
+                        print(f"[Assistant] Gemini primary failed with temporary provider error; fallback succeeded with '{m}'.")
+                    else:
+                        print(f"[Assistant] Gemini '{m}' responded successfully.")
                     return res.text.strip()
             except Exception as e:
-                print(f"[Assistant] Gemini model '{m}' call failed: {e}")
+                print(f"[Assistant] Gemini model '{m}' call failed ({e}). Trying next candidate model...")
     except ImportError as e:
         print(f"[Assistant] google-genai SDK not installed: {e}")
     except Exception as e:
@@ -555,12 +580,12 @@ class AssistantService:
     def __init__(self):
         self.context_mgr = ConversationContextManager()
 
-    def chat(self, message: str, session_id: Optional[str] = None) -> CopilotResponse:
+    def chat(self, message: str, session_id: Optional[str] = None, project_code: Optional[str] = None) -> CopilotResponse:
         sid = session_id or str(uuid.uuid4())
         session = self.context_mgr.get_session(sid)
 
         # 1. Extract entities and intent signals
-        entities = _extract_entities(message, session)
+        entities = _extract_entities(message, session, explicit_project_code=project_code)
 
         # 2. Gather all relevant live data + RAG evidence
         evidence = _build_evidence_context(message, entities)

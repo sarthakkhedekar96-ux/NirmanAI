@@ -156,13 +156,28 @@ export const AIAssistantDrawer: React.FC<AIAssistantDrawerProps> = ({
       setMessages(prev => [...prev, botMsg]);
     } catch (err: any) {
       console.error('Assistant chat error:', err);
+      const status = err?.response?.status;
       const isTimeout = err?.code === 'ECONNABORTED' || err?.message?.includes('timeout');
+      
+      let msg = '⚠️ Unable to connect to the Assistant service. Please check your network connection or backend service status.';
+      if (isTimeout) {
+        msg = '⏱ The request timed out. Please try again.';
+      } else if (status === 401) {
+        msg = '🔒 Authentication session expired. Please log in again.';
+      } else if (status === 429) {
+        msg = '⏳ Rate limit exceeded for the AI assistant. Please wait a moment before sending another request.';
+      } else if (status === 503) {
+        msg = '⚡ AI provider (Gemini) is temporarily unavailable due to high demand. Please retry in a few moments.';
+      } else if (status === 502 || status === 500) {
+        msg = `🛠️ The Assistant service encountered an internal processing error (HTTP ${status}). Please try again.`;
+      } else if (err?.response?.data?.message) {
+        msg = `⚠️ ${err.response.data.message}`;
+      }
+
       const errorMsg: MessageItem = {
         id: `err-${Date.now()}`,
         sender: 'assistant',
-        text: isTimeout
-          ? '⏱ The request timed out. Please try again.'
-          : '⚠️ Unable to connect to the Assistant service. Please check your network connection or backend service status.',
+        text: msg,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         isError: true
       };

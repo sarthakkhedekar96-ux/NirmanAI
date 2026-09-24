@@ -50,6 +50,7 @@ class LLMService:
 
             try:
                 from google import genai
+                from google.genai import types
                 client = genai.Client(api_key=api_key)
                 
                 system_instruction = (
@@ -59,18 +60,33 @@ class LLMService:
                     "Include document evidence citation tags like [E1], [E2] where applicable."
                 )
 
-                for m in candidate_models:
+                gen_config = None
+                try:
+                    gen_config = types.GenerateContentConfig(
+                        system_instruction=system_instruction,
+                        temperature=0.1,
+                        http_options=types.HttpOptions(timeout=20000),
+                        automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True)
+                    )
+                except Exception:
+                    gen_config = {"system_instruction": system_instruction, "temperature": 0.1}
+
+                for idx, m in enumerate(candidate_models):
                     try:
                         model_name = f"models/{m}" if not m.startswith("models/") else m
                         response = client.models.generate_content(
                             model=model_name,
                             contents=prompt_context,
-                            config={"system_instruction": system_instruction, "temperature": 0.1}
+                            config=gen_config
                         )
                         if response and response.text:
+                            if idx > 0:
+                                print(f"[LLMService] Gemini primary failed; fallback succeeded with '{m}'.")
+                            else:
+                                print(f"[LLMService] Gemini '{m}' responded successfully.")
                             return response.text.strip()
                     except Exception as model_err:
-                        print(f"[LLMService] Gemini model '{m}' attempt failed ({model_err}).")
+                        print(f"[LLMService] Gemini model '{m}' attempt failed ({model_err}). Trying next model...")
                         continue
 
             except Exception as e:

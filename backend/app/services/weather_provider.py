@@ -77,7 +77,7 @@ class OpenMeteoWeatherProvider(BaseWeatherProvider):
         )
         try:
             req = urllib.request.Request(url, headers={"User-Agent": "NirmanAI-Infrastructure-Monitor/1.0"})
-            with urllib.request.urlopen(req, timeout=3.0) as resp:
+            with urllib.request.urlopen(req, timeout=1.5) as resp:
                 if resp.status == 200:
                     data = json.loads(resp.read().decode('utf-8'))
                     current = data.get("current", {})
@@ -111,7 +111,7 @@ class OpenMeteoWeatherProvider(BaseWeatherProvider):
         )
         try:
             req = urllib.request.Request(url, headers={"User-Agent": "NirmanAI-Infrastructure-Monitor/1.0"})
-            with urllib.request.urlopen(req, timeout=4.0) as resp:
+            with urllib.request.urlopen(req, timeout=1.5) as resp:
                 if resp.status == 200:
                     data = json.loads(resp.read().decode('utf-8'))
                     hourly = data.get("hourly", {})

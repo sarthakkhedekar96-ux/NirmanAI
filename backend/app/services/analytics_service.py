@@ -5,7 +5,14 @@ from backend.app.config import DATABASE_URL, FALLBACK_SQLITE_PATH
 from backend.app.core.db_resilience import get_resilient_db_engine as get_db_engine
 
 
+from backend.app.services.cache_service import cache_service
+
+
 def get_executive_summary():
+    cached = cache_service.get("executive_summary")
+    if cached:
+        return cached
+
     engine = get_db_engine()
     with engine.connect() as conn:
         # Count all master projects
@@ -132,6 +139,8 @@ def get_executive_summary():
         "avg_delay_months": round(avg_del, 1),
         "top_sectors_by_cost_overrun": top_sectors,
     }
+    cache_service.set("executive_summary", res, ttl_seconds=120)
+    return res
 
 
 def get_geographic_risk():

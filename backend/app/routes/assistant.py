@@ -17,8 +17,9 @@ def chat_with_assistant(req: AssistantChatRequest):
     if not msg.strip():
         raise HTTPException(status_code=400, detail="Chat message cannot be empty.")
 
+    p_code = req.project_code or req.active_project_code
     try:
-        res = assistant_service.chat(message=msg, session_id=req.session_id)
+        res = assistant_service.chat(message=msg, session_id=req.session_id, project_code=p_code)
         res.response = res.answer
         return res
     except Exception as e:
