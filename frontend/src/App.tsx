@@ -90,7 +90,7 @@ function AppWorkspace() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 font-sans antialiased">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#e6f7fc] via-[#eaf8ff] to-[#f0faef] text-slate-900 font-sans antialiased">
       {/* 401 Session Expired Banner */}
       {sessionExpired && (
         <div className="bg-amber-600 text-white text-xs px-4 py-2 flex items-center justify-between shadow-md z-50">

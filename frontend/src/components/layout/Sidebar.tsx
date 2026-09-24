@@ -155,7 +155,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Sidebar Overlay Drawer */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 bg-white/95 border-r border-cyan-100 text-slate-700 flex flex-col w-72 transition-transform duration-300 ease-in-out shadow-xl backdrop-blur-md ${
+        className={`fixed top-0 bottom-0 left-0 z-50 bg-gradient-to-b from-[#d9f2fd] via-[#e6f7fc] to-[#e1f0fa] border-r border-cyan-200/90 text-slate-800 flex flex-col w-72 transition-transform duration-300 ease-in-out shadow-xl backdrop-blur-md ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
         aria-label="Sidebar Navigation"
@@ -188,7 +188,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Navigation Items List */}
-        <div className="flex-1 overflow-y-auto py-4 px-2 space-y-5 scrollbar-thin scrollbar-thumb-cyan-100">
+        <div className="flex-1 overflow-y-auto py-4 px-2 space-y-5 scrollbar-thin scrollbar-thumb-cyan-200">
           {sections.map((section, idx) => {
             const visibleItems = section.items.filter(item => !item.adminOnly || isAdmin);
             if (visibleItems.length === 0) return null;
@@ -196,7 +196,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             return (
               <div key={idx} className="space-y-1">
                 {/* Section Header */}
-                <div className="px-3 pb-1 text-[10px] font-bold text-cyan-900/60 tracking-wider uppercase">
+                <div className="px-3 pb-1 text-[10px] font-extrabold text-cyan-950 tracking-wider uppercase">
                   {section.title}
                 </div>
 
@@ -209,13 +209,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <button
                       key={item.id}
                       onClick={() => handleItemClick(item.id)}
-                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-all group relative cursor-pointer ${
+                      className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold transition-all group relative cursor-pointer ${
                         isActive
-                          ? 'bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 text-white font-semibold shadow-xs shadow-cyan-500/30'
-                          : 'text-slate-700 hover:text-cyan-950 hover:bg-cyan-50/80'
+                          ? 'bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 text-white font-bold shadow-md shadow-cyan-500/25'
+                          : 'text-slate-800 hover:text-cyan-950 hover:bg-cyan-200/60'
                       }`}
                     >
-                      <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-cyan-600 group-hover:text-cyan-800'}`} />
+                      <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-cyan-700 group-hover:text-cyan-950'}`} />
 
                       <span className="truncate">
                         {item.label}
@@ -223,7 +223,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                       {/* Badge */}
                       {item.badge && (
-                        <span className="ml-auto text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-50 text-cyan-800 border border-cyan-200 truncate max-w-[70px]">
+                        <span className="ml-auto text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-100 text-cyan-900 border border-cyan-300 font-bold truncate max-w-[70px]">
                           {item.badge}
                         </span>
                       )}
@@ -236,10 +236,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Sidebar Footer */}
-        <div className="p-3 border-t border-cyan-100 text-[11px] text-slate-600 bg-cyan-50/40">
+        <div className="p-3 border-t border-cyan-200/80 text-[11px] text-slate-700 bg-cyan-100/50 font-medium">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-            <span className="font-mono text-slate-600">Risk Platform Online</span>
+            <span className="font-mono text-slate-700 font-semibold">Risk Platform Online</span>
           </div>
         </div>
       </aside>

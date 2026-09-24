@@ -177,69 +177,69 @@ export const DependencyIntelligenceView: React.FC<DependencyIntelligenceViewProp
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       {/* Module Title Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900 border border-slate-800 rounded-2xl p-6 text-white shadow-xl">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-cyan-600 via-sky-600 to-blue-700 border border-cyan-500/20 rounded-2xl p-6 text-white shadow-md">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2.5 bg-blue-500/20 text-blue-400 rounded-xl border border-blue-500/30">
+            <div className="p-2.5 bg-white/20 text-white rounded-xl border border-white/30">
               <Network className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">Dependency Intelligence</h1>
-              <p className="text-xs text-slate-400">Cross-Department Operational Graph & Neutral Coordination Pressure Analysis</p>
+              <h1 className="text-2xl font-bold tracking-tight text-white">Dependency Intelligence</h1>
+              <p className="text-xs text-cyan-100">Cross-Department Operational Graph & Neutral Coordination Pressure Analysis</p>
             </div>
           </div>
         </div>
 
         {/* Health summary pill bar */}
         {health && (
-          <div className="flex items-center gap-4 bg-slate-950/80 border border-slate-800/80 rounded-xl px-4 py-2.5 text-xs">
+          <div className="flex items-center gap-4 bg-white/10 border border-white/20 backdrop-blur-md rounded-xl px-4 py-2.5 text-xs text-white">
             <div>
-              <span className="text-slate-400 block text-[10px]">TOTAL NODES</span>
-              <span className="font-bold text-slate-200">{health.nodes}</span>
+              <span className="text-cyan-100 block text-[10px]">TOTAL NODES</span>
+              <span className="font-bold text-white">{health.nodes}</span>
             </div>
-            <div className="h-6 w-px bg-slate-800" />
+            <div className="h-6 w-px bg-white/20" />
             <div>
-              <span className="text-slate-400 block text-[10px]">TOTAL EDGES</span>
-              <span className="font-bold text-slate-200">{health.edges}</span>
+              <span className="text-cyan-100 block text-[10px]">TOTAL EDGES</span>
+              <span className="font-bold text-white">{health.edges}</span>
             </div>
-            <div className="h-6 w-px bg-slate-800" />
+            <div className="h-6 w-px bg-white/20" />
             <div>
-              <span className="text-slate-400 block text-[10px]">DOCUMENTED</span>
-              <span className="font-bold text-blue-400">{health.documented_edges}</span>
+              <span className="text-cyan-100 block text-[10px]">DOCUMENTED</span>
+              <span className="font-bold text-cyan-200">{health.documented_edges}</span>
             </div>
-            <div className="h-6 w-px bg-slate-800" />
+            <div className="h-6 w-px bg-white/20" />
             <div>
-              <span className="text-slate-400 block text-[10px]">INFERRED</span>
-              <span className="font-bold text-amber-400">{health.inferred_edges}</span>
+              <span className="text-cyan-100 block text-[10px]">INFERRED</span>
+              <span className="font-bold text-amber-300">{health.inferred_edges}</span>
             </div>
           </div>
         )}
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex items-center justify-between border-b border-slate-800">
+      <div className="flex items-center justify-between border-b border-cyan-200">
         <div className="flex gap-2">
           <button
             onClick={() => setActiveTab('graph')}
-            className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors flex items-center gap-2 ${
-              activeTab === 'graph' ? 'border-blue-500 text-blue-400' : 'border-transparent text-slate-400 hover:text-slate-200'
+            className={`px-4 py-2.5 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 cursor-pointer ${
+              activeTab === 'graph' ? 'border-cyan-600 text-cyan-900 bg-cyan-100/50 rounded-t-lg' : 'border-transparent text-slate-600 hover:text-cyan-900'
             }`}
           >
-            <Network className="w-4 h-4" /> Global Dependency Network
+            <Network className="w-4 h-4 text-cyan-600" /> Global Dependency Network
           </button>
           <button
             onClick={() => setActiveTab('bottlenecks')}
-            className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors flex items-center gap-2 ${
-              activeTab === 'bottlenecks' ? 'border-amber-500 text-amber-400' : 'border-transparent text-slate-400 hover:text-slate-200'
+            className={`px-4 py-2.5 text-sm font-bold border-b-2 transition-colors flex items-center gap-2 cursor-pointer ${
+              activeTab === 'bottlenecks' ? 'border-amber-600 text-amber-900 bg-amber-100/50 rounded-t-lg' : 'border-transparent text-slate-600 hover:text-amber-900'
             }`}
           >
-            <Activity className="w-4 h-4" /> Coordination Bottleneck Indicators ({bottlenecks.length})
+            <Activity className="w-4 h-4 text-amber-600" /> Coordination Bottleneck Indicators ({bottlenecks.length})
           </button>
         </div>
 
         {/* Legend */}
-        <div className="hidden lg:flex items-center gap-3 text-[11px] text-slate-400 pb-2">
-          <span className="font-semibold text-slate-300">Evidence Status Legend:</span>
+        <div className="hidden lg:flex items-center gap-3 text-[11px] text-slate-600 pb-2">
+          <span className="font-bold text-slate-800">Evidence Status Legend:</span>
           {getEvidenceBadge('OBSERVED')}
           {getEvidenceBadge('DOCUMENTED')}
           {getEvidenceBadge('INFERRED')}
@@ -250,15 +250,15 @@ export const DependencyIntelligenceView: React.FC<DependencyIntelligenceViewProp
       {activeTab === 'graph' && (
         <div className="space-y-6">
           {/* Controls / Filter Bar */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-wrap items-center gap-4 text-xs">
-            <div className="flex items-center gap-2 text-slate-300 font-semibold">
-              <Filter className="w-4 h-4 text-blue-400" /> Filters:
+          <div className="bg-gradient-to-r from-cyan-100/90 via-sky-100/90 to-blue-100/90 border border-cyan-200 rounded-xl p-4 flex flex-wrap items-center gap-4 text-xs shadow-2xs">
+            <div className="flex items-center gap-2 text-cyan-950 font-bold">
+              <Filter className="w-4 h-4 text-cyan-700" /> Filters:
             </div>
 
             <select
               value={agencyFilter}
               onChange={(e) => setAgencyFilter(e.target.value)}
-              className="bg-slate-950 text-slate-200 border border-slate-800 rounded-lg px-3 py-1.5 focus:outline-none focus:border-blue-500"
+              className="bg-white/90 text-slate-900 border border-cyan-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-cyan-500 font-medium"
             >
               <option value="">All Agencies</option>
               <option value="BHAVNI">BHAVINI</option>
@@ -272,7 +272,7 @@ export const DependencyIntelligenceView: React.FC<DependencyIntelligenceViewProp
             <select
               value={relFilter}
               onChange={(e) => setRelFilter(e.target.value)}
-              className="bg-slate-950 text-slate-200 border border-slate-800 rounded-lg px-3 py-1.5 focus:outline-none focus:border-blue-500"
+              className="bg-white/90 text-slate-900 border border-cyan-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-cyan-500 font-medium"
             >
               <option value="">All Relationship Types</option>
               <option value="IMPLEMENTS">IMPLEMENTS</option>
@@ -286,7 +286,7 @@ export const DependencyIntelligenceView: React.FC<DependencyIntelligenceViewProp
             <select
               value={evidenceFilter}
               onChange={(e) => setEvidenceFilter(e.target.value)}
-              className="bg-slate-950 text-slate-200 border border-slate-800 rounded-lg px-3 py-1.5 focus:outline-none focus:border-blue-500"
+              className="bg-white/90 text-slate-900 border border-cyan-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-cyan-500 font-medium"
             >
               <option value="">All Evidence Types</option>
               <option value="OBSERVED">OBSERVED</option>
@@ -297,32 +297,32 @@ export const DependencyIntelligenceView: React.FC<DependencyIntelligenceViewProp
             {(agencyFilter || relFilter || evidenceFilter) && (
               <button
                 onClick={() => { setAgencyFilter(''); setRelFilter(''); setEvidenceFilter(''); }}
-                className="text-xs text-blue-400 hover:underline"
+                className="text-xs text-cyan-800 hover:text-cyan-950 font-bold underline cursor-pointer"
               >
                 Reset Filters
               </button>
             )}
 
-            {loading && <RefreshCw className="w-4 h-4 text-blue-400 animate-spin ml-auto" />}
+            {loading && <RefreshCw className="w-4 h-4 text-cyan-700 animate-spin ml-auto" />}
           </div>
 
           {/* Graph Visualization Container */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Interactive Node Cards Layout */}
-            <div className="lg:col-span-2 bg-slate-950 border border-slate-800 rounded-2xl p-6 min-h-[480px] space-y-4">
+            <div className="lg:col-span-2 bg-[#e4f5fc] border border-cyan-200 rounded-2xl p-6 min-h-[480px] space-y-4 shadow-xs">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                <span className="text-xs font-bold uppercase tracking-wider text-cyan-950">
                   Network Nodes ({nodes.length}) & Edges ({edges.length})
                 </span>
-                <span className="text-[11px] text-slate-400">Click a node to inspect dependencies</span>
+                <span className="text-[11px] text-slate-600 font-medium">Click a node to inspect dependencies</span>
               </div>
 
               {loading ? (
-                <div className="flex items-center justify-center h-64 text-slate-400 text-sm">
-                  <RefreshCw className="w-6 h-6 animate-spin mr-2 text-blue-500" /> Loading dependency network...
+                <div className="flex items-center justify-center h-64 text-slate-600 text-sm font-medium">
+                  <RefreshCw className="w-6 h-6 animate-spin mr-2 text-cyan-600" /> Loading dependency network...
                 </div>
               ) : nodes.length === 0 ? (
-                <div className="flex items-center justify-center h-64 text-slate-400 text-sm">
+                <div className="flex items-center justify-center h-64 text-slate-600 text-sm font-medium">
                   No dependency nodes found matching current filters.
                 </div>
               ) : (
@@ -337,8 +337,8 @@ export const DependencyIntelligenceView: React.FC<DependencyIntelligenceViewProp
                         onClick={() => setSelectedNodeId(node.id)}
                         className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
                           isSelected
-                            ? 'bg-slate-900 border-blue-500 shadow-lg ring-1 ring-blue-500'
-                            : 'bg-slate-900/60 border-slate-800 hover:border-slate-700 hover:bg-slate-900'
+                            ? 'bg-gradient-to-r from-cyan-100 to-sky-100 border-2 border-cyan-400 shadow-md ring-2 ring-cyan-400/30'
+                            : 'bg-[#f3fbff] border-cyan-200/80 hover:border-cyan-300 hover:bg-white shadow-2xs'
                         }`}
                       >
                         <div className="flex items-start justify-between gap-2 mb-2">
@@ -348,10 +348,10 @@ export const DependencyIntelligenceView: React.FC<DependencyIntelligenceViewProp
                           {getEvidenceBadge(node.evidence_status)}
                         </div>
 
-                        <h4 className="text-xs font-bold text-slate-100 line-clamp-2 mb-1">{node.name}</h4>
-                        <div className="flex items-center justify-between text-[11px] text-slate-400 mt-2">
-                          <span>Key: <code className="text-slate-300 font-mono">{node.key}</code></span>
-                          <span className="font-semibold text-blue-400">{nodeEdges.length} links</span>
+                        <h4 className="text-xs font-bold text-slate-900 line-clamp-2 mb-1">{node.name}</h4>
+                        <div className="flex items-center justify-between text-[11px] text-slate-600 mt-2">
+                          <span>Key: <code className="text-cyan-800 font-mono font-semibold">{node.key}</code></span>
+                          <span className="font-bold text-cyan-700">{nodeEdges.length} links</span>
                         </div>
                       </div>
                     );
@@ -361,16 +361,16 @@ export const DependencyIntelligenceView: React.FC<DependencyIntelligenceViewProp
             </div>
 
             {/* Inspector Panel */}
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-white space-y-4">
-              <h3 className="text-sm font-bold tracking-wide uppercase text-slate-300 border-b border-slate-800 pb-3">
+            <div className="bg-[#e8f7ff] border border-cyan-200 rounded-2xl p-6 text-slate-900 space-y-4 shadow-xs">
+              <h3 className="text-sm font-bold tracking-wide uppercase text-cyan-950 border-b border-cyan-200 pb-3">
                 Dependency Detail Inspector
               </h3>
 
               {selectedNode ? (
                 <div className="space-y-4 text-xs">
                   <div>
-                    <span className="text-slate-400 block mb-1">SELECTED ENTITY</span>
-                    <h4 className="text-base font-bold text-white">{selectedNode.name}</h4>
+                    <span className="text-slate-500 font-medium block mb-1">SELECTED ENTITY</span>
+                    <h4 className="text-base font-bold text-slate-900">{selectedNode.name}</h4>
                     <div className="flex items-center gap-2 mt-2">
                       <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${getNodeColor(selectedNode.type)}`}>
                         {selectedNode.type}
@@ -382,16 +382,16 @@ export const DependencyIntelligenceView: React.FC<DependencyIntelligenceViewProp
                   {selectedNode.type === 'PROJECT' && onSelectProject && (
                     <button
                       onClick={() => onSelectProject(selectedNode.key.replace('PROJECT:', ''))}
-                      className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-xs transition-colors flex items-center justify-center gap-2"
+                      className="w-full py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-semibold rounded-xl text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-xs"
                     >
                       Open Project Dashboard <ArrowRight className="w-4 h-4" />
                     </button>
                   )}
 
-                  <div className="pt-2 border-t border-slate-800">
-                    <span className="text-slate-400 font-semibold block mb-2">Connected Dependency Links ({connectedEdges.length})</span>
+                  <div className="pt-2 border-t border-cyan-200">
+                    <span className="text-cyan-950 font-bold block mb-2">Connected Dependency Links ({connectedEdges.length})</span>
                     {connectedEdges.length === 0 ? (
-                      <p className="text-slate-400 italic">No direct links found for this node.</p>
+                      <p className="text-slate-500 italic">No direct links found for this node.</p>
                     ) : (
                       <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
                         {connectedEdges.map(edge => {
@@ -399,16 +399,16 @@ export const DependencyIntelligenceView: React.FC<DependencyIntelligenceViewProp
                           const otherNode = nodes.find(n => n.id === (isSource ? edge.target : edge.source));
 
                           return (
-                            <div key={edge.id} className="p-3 bg-slate-950 border border-slate-800 rounded-xl space-y-1">
+                            <div key={edge.id} className="p-3 bg-white border border-cyan-200/80 rounded-xl space-y-1 shadow-2xs">
                               <div className="flex items-center justify-between text-[10px]">
-                                <span className="font-bold text-blue-400">{edge.relationship_type}</span>
+                                <span className="font-bold text-cyan-700">{edge.relationship_type}</span>
                                 {getEvidenceBadge(edge.evidence_status)}
                               </div>
-                              <div className="font-semibold text-slate-200">
+                              <div className="font-semibold text-slate-900">
                                 {isSource ? '→ ' : '← '} {otherNode ? safeString(otherNode.name) : (isSource ? safeString(edge.target_key) : safeString(edge.source_key))}
                               </div>
                               {edge.evidence_text && (
-                                <p className="text-[11px] text-slate-400 italic mt-1 bg-slate-900/80 p-1.5 rounded border border-slate-800">
+                                <p className="text-[11px] text-slate-600 italic mt-1 bg-cyan-50/70 p-1.5 rounded border border-cyan-100">
                                   "{edge.evidence_text}"
                                 </p>
                               )}
@@ -420,8 +420,8 @@ export const DependencyIntelligenceView: React.FC<DependencyIntelligenceViewProp
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center h-64 text-center text-slate-400 space-y-2">
-                  <Info className="w-8 h-8 text-slate-400" />
+                <div className="flex flex-col items-center justify-center h-64 text-center text-slate-500 space-y-2">
+                  <Info className="w-8 h-8 text-cyan-600" />
                   <p className="text-xs">Select any node from the left panel to inspect its exact connected relationships, evidence status, and operational text.</p>
                 </div>
               )}

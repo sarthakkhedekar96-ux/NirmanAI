@@ -73,7 +73,7 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="bg-white/95 text-slate-900 border-b border-cyan-100/90 shadow-xs sticky top-0 z-30 backdrop-blur-md">
+    <header className="bg-gradient-to-r from-[#e1f5fe] via-[#eaf8ff] to-[#e4f2fe] text-slate-900 border-b border-cyan-200/90 shadow-xs sticky top-0 z-30 backdrop-blur-md">
       {/* Top Govt Bar */}
       <div className="bg-gradient-to-r from-cyan-950 via-slate-900 to-cyan-900 text-cyan-100 text-xs py-1 px-4 flex justify-between items-center border-b border-cyan-800/40">
         <div className="flex items-center gap-2 font-medium">
