@@ -12,7 +12,7 @@ from backend.app.middleware.error_handler import (
     http_exception_handler, validation_exception_handler, generic_exception_handler
 )
 
-from backend.app.routes import health, projects, risk, analytics, documents, assistant, risk_intelligence, auth, notifications, environment, dependencies, stress_test, satellite
+from backend.app.routes import health, projects, risk, analytics, documents, assistant, risk_intelligence, auth, notifications, environment, dependencies, stress_test, satellite, public_landing
 from backend.app.core.db_init import ensure_master_tables_exist, ensure_users_table_exists, seed_bootstrap_admin_if_needed, ensure_notification_tables_exist, ensure_project_indexes_exist, ensure_environmental_tables_exist, ensure_dependency_tables_exist
 
 # Initialize Structured Logging
@@ -75,6 +75,7 @@ app.include_router(environment.router)
 app.include_router(dependencies.router)
 app.include_router(stress_test.router)
 app.include_router(satellite.router)
+app.include_router(public_landing.router)
 
 from backend.app.services.cache_service import cache_service
 

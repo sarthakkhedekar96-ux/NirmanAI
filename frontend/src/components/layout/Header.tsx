@@ -73,16 +73,16 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="bg-gradient-to-r from-[#e1f5fe] via-[#eaf8ff] to-[#e4f2fe] text-slate-900 border-b border-cyan-200/90 shadow-xs sticky top-0 z-30 backdrop-blur-md">
-      {/* Top Govt Bar */}
-      <div className="bg-gradient-to-r from-cyan-950 via-slate-900 to-cyan-900 text-cyan-100 text-xs py-1 px-4 flex justify-between items-center border-b border-cyan-800/40">
+    <header className="bg-gradient-to-r from-[#e5f4fd] via-[#f0f8fd] to-[#e7f4fd] text-slate-900 border-b-2 border-cyan-300/80 shadow-md sticky top-0 z-30 backdrop-blur-md">
+      {/* Top Govt Bar (Kept Dark Navy) */}
+      <div className="bg-[#041321] text-cyan-200/90 text-xs py-1 px-4 flex justify-between items-center border-b border-cyan-900/80">
         <div className="flex items-center gap-2 font-medium">
-          <span className="inline-block w-2.5 h-2.5 rounded-full bg-amber-400"></span>
-          <span className="hidden sm:inline">GOVERNMENT OF INDIA — </span>
-          <span>MINISTRY OF STATISTICS & PROGRAMME IMPLEMENTATION</span>
+          <span className="inline-block w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-2xs"></span>
+          <span className="hidden sm:inline font-extrabold tracking-wider text-cyan-100">GOVERNMENT OF INDIA — </span>
+          <span className="font-semibold">MINISTRY OF STATISTICS &amp; PROGRAMME IMPLEMENTATION</span>
         </div>
         <div className="flex items-center gap-4 text-cyan-200">
-          <span className="hidden md:flex items-center gap-1 text-xs">
+          <span className="hidden md:flex items-center gap-1 text-xs font-mono">
             <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
             Official Monitoring Portal
           </span>
@@ -100,13 +100,13 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Main Header Container */}
+      {/* Main Header Container (Brighter Light Cyan Prototype Theme) */}
       <div className="max-w-full px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3">
         {/* Left: Hamburger & Brand */}
         <div className="flex items-center gap-3">
           <button
             onClick={onToggleSidebar}
-            className="p-1.5 rounded-lg text-slate-600 hover:text-cyan-900 hover:bg-cyan-50 transition focus:outline-none focus:ring-2 focus:ring-cyan-500 cursor-pointer"
+            className="p-1.5 rounded-lg text-slate-700 hover:text-cyan-950 hover:bg-cyan-100/70 transition focus:outline-none focus:ring-2 focus:ring-cyan-500 cursor-pointer"
             aria-label={isSidebarOpen ? "Close navigation menu" : "Open navigation menu"}
             title={isSidebarOpen ? "Close navigation menu" : "Open navigation menu"}
           >
@@ -114,7 +114,7 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
 
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => onSelectProject('')}>
-            <div className="bg-white p-1 rounded-md border border-cyan-200/80 shadow-2xs shrink-0 flex items-center justify-center h-10 w-auto">
+            <div className="bg-white p-1 rounded-lg border border-cyan-300/90 shadow-2xs shrink-0 flex items-center justify-center h-10 w-auto">
               <img 
                 src="/nirman-logo.jpeg" 
                 alt="Nirman AI Logo" 
@@ -123,15 +123,15 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-base font-extrabold tracking-tight bg-gradient-to-r from-cyan-600 via-sky-600 to-blue-700 bg-clip-text text-transparent leading-none">
+                <h1 className="text-base font-extrabold tracking-tight text-[#071D2F] leading-none">
                   NIRMAN AI
                 </h1>
-                <span className="bg-cyan-50 text-cyan-800 border border-cyan-200 text-[9px] font-semibold px-1.5 py-0.5 rounded tracking-wide uppercase">
+                <span className="bg-cyan-100/90 text-cyan-900 border border-cyan-300 text-[9px] font-bold px-1.5 py-0.5 rounded tracking-wide uppercase">
                   InfraPredict v1.0
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 font-normal hidden sm:block">
-                Infrastructure Risk Intelligence & Decision Support
+              <p className="text-[11px] text-slate-600 font-normal hidden sm:block">
+                Infrastructure Risk Intelligence &amp; Decision Support
               </p>
             </div>
           </div>

@@ -562,8 +562,25 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value: any, name: any) => [`${formatIndianNumber(Number(value))} Projects`, name]}
-                    contentStyle={{ backgroundColor: '#0f172a', borderRadius: '6px', color: '#fff', fontSize: '12px', border: 'none' }}
+                    wrapperStyle={{ zIndex: 1000, outline: 'none' }}
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const item = payload[0].payload;
+                        return (
+                          <div className="bg-[#0b1728] border border-cyan-500/40 text-white p-3 rounded-lg shadow-2xl text-xs space-y-1">
+                            <div className="font-bold flex items-center gap-1.5" style={{ color: item.color || '#38bdf8' }}>
+                              <span className="w-2.5 h-2.5 rounded-full inline-block shrink-0" style={{ backgroundColor: item.color }} />
+                              <span className="tracking-wide uppercase text-[11px] font-mono">{item.name} RISK</span>
+                            </div>
+                            <div className="font-mono text-white font-bold text-xs flex items-center gap-2 pt-0.5 border-t border-slate-700/60">
+                              <span className="text-cyan-300">{formatIndianNumber(item.value)} Projects</span>
+                              <span className="text-slate-300 font-medium">({item.percent?.toFixed(1)}%)</span>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
                   />
                 </PieChart>
               </ResponsiveContainer>

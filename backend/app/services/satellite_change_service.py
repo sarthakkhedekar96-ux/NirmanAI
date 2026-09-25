@@ -15,7 +15,10 @@ import time
 import io
 import json
 import zlib
-import tifffile
+try:
+    import tifffile
+except ImportError:
+    tifffile = None
 import logging
 import threading
 import concurrent.futures

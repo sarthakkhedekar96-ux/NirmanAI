@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Header } from './components/layout/Header';
 import { Sidebar, NavTabType } from './components/layout/Sidebar';
 import { Footer } from './components/layout/Footer';
@@ -24,12 +24,14 @@ import { DependencyIntelligenceView } from './components/dependencies/Dependency
 import { BottleneckLeaderboardView } from './components/dependencies/BottleneckLeaderboardView';
 import { StressTestView } from './components/stress/StressTestView';
 import { LoginView } from './components/auth/LoginView';
+import { LandingPage } from './components/landing/LandingPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { RefreshCw, AlertTriangle, ShieldAlert, X } from 'lucide-react';
 
 function AppWorkspace() {
   const { isAuthenticated, loading, sessionExpired, dismissSessionExpired, forbiddenToast, dismissForbiddenToast } = useAuth();
 
+  const [currentPath, setCurrentPath] = useState<string>(() => window.location.pathname.toLowerCase());
   const [activeTab, setActiveTab] = useState<NavTabType>('overview');
   const [activeProjectCode, setActiveProjectCode] = useState<string | null>(null);
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
@@ -38,6 +40,36 @@ function AppWorkspace() {
   // Sidebar Overlay Drawer State
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [assistantSectionContext, setAssistantSectionContext] = useState<{ sectionName: string; starterQuestions?: string[] } | null>(null);
+
+  const prevAuthRef = useRef(isAuthenticated);
+
+  useEffect(() => {
+    const handleLocationChange = () => {
+      setCurrentPath(window.location.pathname.toLowerCase());
+    };
+    window.addEventListener('popstate', handleLocationChange);
+    return () => window.removeEventListener('popstate', handleLocationChange);
+  }, []);
+
+  // Detect Auth State transitions:
+  useEffect(() => {
+    // Logout transition (authenticated -> unauthenticated): redirect to '/' (LandingPage)
+    if (prevAuthRef.current && !isAuthenticated) {
+      window.history.pushState({}, '', '/');
+      setCurrentPath('/');
+    }
+    // Login transition (unauthenticated -> authenticated while on /login): navigate to '/dashboard'
+    if (!prevAuthRef.current && isAuthenticated && currentPath === '/login') {
+      window.history.pushState({}, '', '/dashboard');
+      setCurrentPath('/dashboard');
+    }
+    prevAuthRef.current = isAuthenticated;
+  }, [isAuthenticated, currentPath]);
+
+  const navigateTo = (path: string) => {
+    window.history.pushState({}, '', path);
+    setCurrentPath(path.toLowerCase());
+  };
 
   if (loading) {
     return (
@@ -48,9 +80,35 @@ function AppWorkspace() {
     );
   }
 
-  if (!isAuthenticated) {
-    return <LoginView />;
+  const isPublicLandingRoute = currentPath === '/' || currentPath === '/landing' || currentPath === '/public';
+
+  // RULE A: ALL visitors (authenticated or unauthenticated) on '/', '/landing', or '/public' ALWAYS see LandingPage
+  if (isPublicLandingRoute) {
+    return (
+      <LandingPage
+        onLogin={() => navigateTo(isAuthenticated ? '/dashboard' : '/login')}
+        onExploreApp={() => navigateTo(isAuthenticated ? '/dashboard' : '/login')}
+        isAuthenticated={isAuthenticated}
+      />
+    );
   }
+
+  // RULE B: Visitors on '/login' see LoginView (or redirect to '/dashboard' if already authenticated)
+  if (currentPath === '/login') {
+    if (isAuthenticated) {
+      window.history.replaceState({}, '', '/dashboard');
+      setCurrentPath('/dashboard');
+    } else {
+      return <LoginView onNavigateLanding={() => navigateTo('/')} />;
+    }
+  }
+
+  // RULE C: Unauthenticated users attempting to access protected internal application routes -> show LoginView
+  if (!isAuthenticated) {
+    return <LoginView onNavigateLanding={() => navigateTo('/')} />;
+  }
+
+  // RULE D: Authenticated users on internal application routes -> render Authenticated Dashboard
 
   const handleSelectProject = (code: string) => {
     if (!code) {
@@ -90,7 +148,7 @@ function AppWorkspace() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#e6f7fc] via-[#eaf8ff] to-[#f0faef] text-slate-900 font-sans antialiased">
+    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 font-sans antialiased">
       {/* 401 Session Expired Banner */}
       {sessionExpired && (
         <div className="bg-amber-600 text-white text-xs px-4 py-2 flex items-center justify-between shadow-md z-50">

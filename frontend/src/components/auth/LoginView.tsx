@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Lock, User, Eye, EyeOff, RefreshCw, AlertTriangle, Shield, Activity, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, Lock, User, Eye, EyeOff, RefreshCw, AlertTriangle, Shield, Activity, CheckCircle2, Globe } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
-export const LoginView: React.FC = () => {
+interface LoginViewProps {
+  onNavigateLanding?: () => void;
+}
+
+export const LoginView: React.FC<LoginViewProps> = ({ onNavigateLanding }) => {
   const { login } = useAuth();
   const [usernameOrEmail, setUsernameOrEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [activeDemoRole, setActiveDemoRole] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -37,9 +42,10 @@ export const LoginView: React.FC = () => {
     }
   };
 
-  const handleDemoFill = (uname: string, pwd: string) => {
+  const handleDemoFill = (uname: string, pwd: string, roleTitle: string) => {
     setUsernameOrEmail(uname);
     setPassword(pwd);
+    setActiveDemoRole(roleTitle);
     setError(null);
   };
 
@@ -399,6 +405,15 @@ export const LoginView: React.FC = () => {
 
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
+            {activeDemoRole && !error && (
+              <div className="p-3 bg-cyan-50 border border-cyan-300 rounded-lg text-cyan-950 text-xs flex items-center gap-2.5 animate-in fade-in shadow-2xs">
+                <CheckCircle2 className="w-4 h-4 text-cyan-600 shrink-0" />
+                <span className="font-semibold">
+                  Demo credentials loaded for <strong className="text-slate-950 font-bold">{activeDemoRole}</strong>. Click <span className="underline decoration-cyan-400 font-bold">SIGN IN</span> below to continue.
+                </span>
+              </div>
+            )}
+
             {error && (
               <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs flex items-center gap-2.5 animate-in fade-in">
                 <AlertTriangle className="w-4 h-4 text-red-500 shrink-0" />
@@ -418,7 +433,9 @@ export const LoginView: React.FC = () => {
                   type="text"
                   required
                   value={usernameOrEmail}
-                  onChange={(e) => setUsernameOrEmail(e.target.value)}
+                  onChange={(e) => {
+                    setUsernameOrEmail(e.target.value);
+                  }}
                   placeholder="admin@nirman.gov.in or admin"
                   className="w-full pl-10 pr-4 py-3 bg-slate-50 text-slate-900 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 font-medium transition placeholder:text-slate-400"
                 />
@@ -437,7 +454,9 @@ export const LoginView: React.FC = () => {
                   type={showPassword ? 'text' : 'password'}
                   required
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                  }}
                   placeholder="••••••••••••"
                   className="w-full pl-10 pr-10 py-3 bg-slate-50 text-slate-900 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 font-medium transition placeholder:text-slate-400"
                 />
@@ -485,40 +504,92 @@ export const LoginView: React.FC = () => {
             </button>
           </form>
 
-          {/* Quick Institutional Candidate Credentials Auto-fill */}
-          <div className="pt-4 border-t border-slate-200 space-y-2">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block text-center font-mono">
-              Institutional Candidate Credentials:
-            </span>
-            <div className="grid grid-cols-3 gap-2">
+          {/* Quick Institutional Demo Role Shortcuts */}
+          <div className="pt-4 border-t border-slate-200 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-slate-700 tracking-wide font-mono uppercase">
+                Demo Role Quick Shortcuts:
+              </span>
+              <span className="text-[9px] text-cyan-800 font-bold bg-cyan-50 border border-cyan-200 px-2 py-0.5 rounded font-mono">
+                ONE-CLICK AUTOFILL
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-500 leading-snug">
+              Select a demo role to automatically load the corresponding credentials.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <button
                 type="button"
-                onClick={() => handleDemoFill('admin', 'NirmanAdmin@2026')}
-                className="p-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-left transition space-y-0.5 cursor-pointer shadow-2xs"
+                onClick={() => handleDemoFill('admin', 'NirmanAdmin@2026', 'Administrator')}
+                className={`p-2.5 border rounded-xl text-left transition-all duration-150 cursor-pointer flex flex-col justify-between space-y-1 shadow-2xs group ${
+                  activeDemoRole === 'Administrator'
+                    ? 'bg-cyan-50/90 border-cyan-500 ring-2 ring-cyan-400/20'
+                    : 'bg-slate-50/80 hover:bg-cyan-50/40 border-slate-200 hover:border-cyan-300'
+                }`}
               >
-                <div className="text-[10px] font-bold text-blue-700">ADMIN</div>
-                <div className="text-[10px] text-slate-500 font-mono truncate">admin</div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-blue-900 group-hover:text-cyan-700 transition">ADMIN</span>
+                  <span className="text-[9px] font-bold bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-mono">DEMO</span>
+                </div>
+                <div className="text-[11px] font-bold text-slate-800">Administrator Demo</div>
+                <div className="text-[10px] text-slate-500 group-hover:text-cyan-700 transition pt-0.5">
+                  Click to load demo credentials
+                </div>
               </button>
 
               <button
                 type="button"
-                onClick={() => handleDemoFill('decision_maker', 'NirmanDecision@2026')}
-                className="p-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-left transition space-y-0.5 cursor-pointer shadow-2xs"
+                onClick={() => handleDemoFill('analyst', 'NirmanAnalyst@2026', 'Analyst')}
+                className={`p-2.5 border rounded-xl text-left transition-all duration-150 cursor-pointer flex flex-col justify-between space-y-1 shadow-2xs group ${
+                  activeDemoRole === 'Analyst'
+                    ? 'bg-cyan-50/90 border-cyan-500 ring-2 ring-cyan-400/20'
+                    : 'bg-slate-50/80 hover:bg-cyan-50/40 border-slate-200 hover:border-cyan-300'
+                }`}
               >
-                <div className="text-[10px] font-bold text-emerald-700">DECISION</div>
-                <div className="text-[10px] text-slate-500 font-mono truncate">decision_maker</div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-amber-900 group-hover:text-cyan-700 transition">ANALYST</span>
+                  <span className="text-[9px] font-bold bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-mono">DEMO</span>
+                </div>
+                <div className="text-[11px] font-bold text-slate-800">Analyst Demo</div>
+                <div className="text-[10px] text-slate-500 group-hover:text-cyan-700 transition pt-0.5">
+                  Click to load demo credentials
+                </div>
               </button>
 
               <button
                 type="button"
-                onClick={() => handleDemoFill('analyst', 'NirmanAnalyst@2026')}
-                className="p-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-left transition space-y-0.5 cursor-pointer shadow-2xs"
+                onClick={() => handleDemoFill('decision_maker', 'NirmanDecision@2026', 'Decision Maker')}
+                className={`p-2.5 border rounded-xl text-left transition-all duration-150 cursor-pointer flex flex-col justify-between space-y-1 shadow-2xs group ${
+                  activeDemoRole === 'Decision Maker'
+                    ? 'bg-cyan-50/90 border-cyan-500 ring-2 ring-cyan-400/20'
+                    : 'bg-slate-50/80 hover:bg-cyan-50/40 border-slate-200 hover:border-cyan-300'
+                }`}
               >
-                <div className="text-[10px] font-bold text-amber-700">ANALYST</div>
-                <div className="text-[10px] text-slate-500 font-mono truncate">analyst</div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-emerald-900 group-hover:text-cyan-700 transition">DECISION</span>
+                  <span className="text-[9px] font-bold bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-mono">DEMO</span>
+                </div>
+                <div className="text-[11px] font-bold text-slate-800">Decision Maker Demo</div>
+                <div className="text-[10px] text-slate-500 group-hover:text-cyan-700 transition pt-0.5">
+                  Click to load demo credentials
+                </div>
               </button>
             </div>
           </div>
+
+          {onNavigateLanding && (
+            <div className="pt-3 text-center">
+              <button
+                type="button"
+                onClick={onNavigateLanding}
+                className="text-xs font-semibold text-cyan-700 hover:text-cyan-900 bg-cyan-50 hover:bg-cyan-100 border border-cyan-200 px-3.5 py-2 rounded-lg transition inline-flex items-center gap-1.5 cursor-pointer shadow-xs w-full justify-center"
+              >
+                <Globe className="w-4 h-4 text-cyan-600" />
+                <span>Explore Public Project Monitoring Portal</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Security Footer Notice */}
